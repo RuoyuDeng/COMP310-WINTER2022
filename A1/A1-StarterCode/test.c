@@ -3,8 +3,9 @@
 #include <string.h>
 
 
-int sum(int x, int y, int z){
-    return x + 3*y;
+
+int sum(int x, int y){
+    return x + y;
 }
 
 int mult(int x, int y){
@@ -13,6 +14,12 @@ int mult(int x, int y){
 
 
 int main(){
+    printf("This is the main branch");
+    printf("This is the main branch");
+    printf("This is the main branch");
+    printf("This is the main branch");
+    printf("This is the main branch");
+    printf("This is the main branch");
     printf("This is a branch");
     int z = mult(5,60);
 }
