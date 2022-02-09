@@ -4,7 +4,7 @@
 
 
 int sum(int x, int y){
-    return x + 3*y;
+    return x + y;
 }
 
 int mult(int x, int y){
