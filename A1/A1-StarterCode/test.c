@@ -3,7 +3,7 @@
 #include <string.h>
 
 
-int sum(int x, int y){
+int sum(int x, int y, int z){
     return x + 3*y;
 }
 
