@@ -3,5 +3,5 @@
 #include <string.h>
 
 int main(){
-    printf("This is a hello file");
+    printf("This is the feature in main file");
 }
