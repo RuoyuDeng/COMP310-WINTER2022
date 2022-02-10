@@ -16,10 +16,12 @@ int main(int argc, char *argv[]) {
 	printf("%s\n", "Shell version 1.1 Created January 2022");
 	help();
 
+	FILE *tty = fopen("/dev/tty", "r");
+	FILE *file_toread;
 	char prompt = '$';  				// Shell prompt
 	char userInput[MAX_USER_INPUT];		// user's input stored here
 	int errorCode = 0;					// zero means no error, default
-
+	int is_batchmode = 0;
 	//init user input
 	for (int i=0; i<MAX_USER_INPUT; i++)
 		userInput[i] = '\0';
@@ -27,10 +29,21 @@ int main(int argc, char *argv[]) {
 	//init shell memory
 	mem_init();
 
+	// we are in batchmode 
+	if(argc > 0) is_batchmode = 1;
+
 	while(1) {							
 		printf("%c ",prompt);
-		fgets(userInput, MAX_USER_INPUT-1, stdin);
+		
+		// when we have a input file redirected to stdin, change
+		// the default write place
+		if (stdin != NULL) {
+			file_toread = stdin;
+		}
 
+		if (feof(stdin)) file_toread = tty;
+		// by default, read from the interactive input tty
+		fgets(userInput, MAX_USER_INPUT-1, file_toread);
 		errorCode = parseInput(userInput);
 		if (errorCode == -1) exit(99);	// ignore all other errors
 		memset(userInput, 0, sizeof(userInput));
@@ -47,7 +60,7 @@ int parseInput(char ui[]) {
 	char tmp[200];
 	char *words[100];							
 	int a,b;							
-	int w=0; // wordID
+	int w=0; // extraced word's index (word0,word1,...)
 
 	for(a=0; ui[a]==' ' && a<1000; a++);		// skip white spaces
 

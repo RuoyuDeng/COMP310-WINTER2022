@@ -13,13 +13,20 @@ int mult(int x, int y){
 }
 
 
-int main(){
-    printf("This is the main branch");
-    printf("This is the main branch");
-    printf("This is the main branch");
-    printf("This is the main branch");
-    printf("This is the main branch");
-    printf("This is the main branch");
-    printf("This is a branch");
-    int z = mult(5,60);
+int main(void) {
+
+    char buf[1000];
+    char buf2[1000];
+
+    FILE *tty = fopen("/dev/tty", "r");
+    if (!tty) {
+        perror("/dev/tty");
+        exit(1);
+    }
+    while (1) {
+        fgets(buf, 1000, tty);
+        fgets(buf2,1000,stdin);
+        printf("%s",buf2);
+        if(feof(tty)) break;
+    }
 }

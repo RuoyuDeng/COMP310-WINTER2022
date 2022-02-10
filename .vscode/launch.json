@@ -1,6 +1,7 @@
 {
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
+    // "<","../A1-testcases_public/batch.txt"
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
@@ -8,8 +9,8 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/A1/A1-StarterCode/a.out",
-            "args": [],
+            "program": "${workspaceFolder}/A1/A1-StarterCode/mysh",
+            "args": ["<","../A1-testcases_public/batch.txt"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
