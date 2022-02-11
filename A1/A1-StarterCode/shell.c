@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 
 	FILE *tty = fopen("/dev/tty", "r"); // default interact FILE stream to read user inputs
 	FILE *file_toread;					
-	int chain_input_num;
+	
 	char *input_piece;
 	char prompt = '$';  				// Shell prompt
 	char userInput[MAX_USER_INPUT];		// user's input stored here
@@ -33,7 +33,6 @@ int main(int argc, char *argv[]) {
 
 	while(1) {							
 		printf("%c ",prompt);
-		chain_input_num = 0;
 		// when we have a input file redirected to stdin, change
 		// the default write place
 		if (stdin != NULL) {
@@ -46,11 +45,11 @@ int main(int argc, char *argv[]) {
 
 		// split the chained and execute them in a loop
 		input_piece = strtok(userInput,";");
-		while(input_piece != NULL && chain_input_num < 10){
+		while(input_piece != NULL){
 			errorCode = parseInput(input_piece);
 			if (errorCode == -1) exit(99);	// ignore all other errors
 			input_piece = strtok(NULL,";");
-			chain_input_num++;
+			
 		}
 		memset(userInput, 0, sizeof(userInput));
 
@@ -68,9 +67,9 @@ int parseInput(char ui[]) {
 	int a,b;							
 	int w=0; // extraced word's index (word0,word1,...)
 
-	for(a=0; ui[a]==' ' && a<1000; a++);		// skip white spaces
+	for(a=0; ui[a]==' ' && a<1000; a++);		// skip white spaces at begining of the line
 
-	while(ui[a] != '\0' && a<1000) {
+	while(ui[a] != '\0' && a<1000) { // keep iterating till the end of the line
 
 		for(b=0; ui[a]!='\0' && ui[a]!=' ' && a<1000; a++, b++)
 			tmp[b] = ui[a];						// extract a word
