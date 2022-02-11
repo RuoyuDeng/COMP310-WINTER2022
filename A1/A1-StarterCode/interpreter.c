@@ -108,6 +108,7 @@ int print(char* var){
 int run(char* script){
 	int errCode = 0;
 	char line[1000];
+	char *line_piece;
 	FILE *p = fopen(script,"rt");  // the program is in a file
 
 	if(p == NULL){
@@ -116,8 +117,14 @@ int run(char* script){
 
 	fgets(line,999,p);
 	while(1){
-		errCode = parseInput(line);	// which calls interpreter()
-		memset(line, 0, sizeof(line));
+		// break the line into pieces
+		line_piece = strtok(line,";");
+		while(line_piece != NULL){
+			errCode = parseInput(line_piece);	// which calls interpreter()
+			line_piece = strtok(NULL,";");
+		}
+		
+		memset(line, 0, sizeof(line)); // Sets the first num bytes of the block of memory pointed by ptr to the specified value
 
 		if(feof(p)){
 			break;
