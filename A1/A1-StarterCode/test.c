@@ -13,20 +13,17 @@ int mult(int x, int y){
 }
 
 
-int main(void) {
-
-    char buf[1000];
-    char buf2[1000];
-
-    FILE *tty = fopen("/dev/tty", "r");
-    if (!tty) {
-        perror("/dev/tty");
-        exit(1);
+int main ()
+{
+    char word[100];
+    char str[] ="set x abc; set y 123; print y; print x";
+    char str2[] ="set x abc";
+    char *pt;
+    pt = strtok (str2,";");
+    while (pt != NULL) {
+        printf("%s\n",pt);
+        // move on to next piece of string token
+        pt = strtok (NULL, ";");
     }
-    while (1) {
-        fgets(buf, 1000, tty);
-        fgets(buf2,1000,stdin);
-        printf("%s",buf2);
-        if(feof(tty)) break;
-    }
+    return 0;
 }

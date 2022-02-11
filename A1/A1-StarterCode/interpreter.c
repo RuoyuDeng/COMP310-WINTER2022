@@ -50,6 +50,10 @@ int interpreter(char* command_args[], int args_size){
 	} else if (strcmp(command_args[0], "run")==0) {
 		if (args_size != 2) return badcommand();
 		return run(command_args[1]);
+	// my_ls
+	} else if (strcmp(command_args[0], "my_ls")==0) {
+		if (args_size != 1) return badcommand();
+		return system("ls -1");
 	
 	} else return badcommand();
 }

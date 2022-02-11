@@ -16,12 +16,13 @@ int main(int argc, char *argv[]) {
 	printf("%s\n", "Shell version 1.1 Created January 2022");
 	help();
 
-	FILE *tty = fopen("/dev/tty", "r");
-	FILE *file_toread;
+	FILE *tty = fopen("/dev/tty", "r"); // default interact FILE stream to read user inputs
+	FILE *file_toread;					
+	int chain_input_num;
+	char *input_piece;
 	char prompt = '$';  				// Shell prompt
 	char userInput[MAX_USER_INPUT];		// user's input stored here
 	int errorCode = 0;					// zero means no error, default
-	int is_batchmode = 0;
 	//init user input
 	for (int i=0; i<MAX_USER_INPUT; i++)
 		userInput[i] = '\0';
@@ -29,12 +30,10 @@ int main(int argc, char *argv[]) {
 	//init shell memory
 	mem_init();
 
-	// we are in batchmode 
-	if(argc > 0) is_batchmode = 1;
 
 	while(1) {							
 		printf("%c ",prompt);
-		
+		chain_input_num = 0;
 		// when we have a input file redirected to stdin, change
 		// the default write place
 		if (stdin != NULL) {
@@ -44,8 +43,15 @@ int main(int argc, char *argv[]) {
 		if (feof(stdin)) file_toread = tty;
 		// by default, read from the interactive input tty
 		fgets(userInput, MAX_USER_INPUT-1, file_toread);
-		errorCode = parseInput(userInput);
-		if (errorCode == -1) exit(99);	// ignore all other errors
+
+		// split the chained and execute them in a loop
+		input_piece = strtok(userInput,";");
+		while(input_piece != NULL && chain_input_num < 10){
+			errorCode = parseInput(input_piece);
+			if (errorCode == -1) exit(99);	// ignore all other errors
+			input_piece = strtok(NULL,";");
+			chain_input_num++;
+		}
 		memset(userInput, 0, sizeof(userInput));
 
 	}
