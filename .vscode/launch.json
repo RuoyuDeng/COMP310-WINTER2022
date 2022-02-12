@@ -10,7 +10,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/A1/A1-StarterCode/mysh",
-            "args": [],
+            "args": ["<","../A1-testcases_public/set.txt"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
