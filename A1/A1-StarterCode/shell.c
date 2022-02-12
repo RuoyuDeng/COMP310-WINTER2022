@@ -13,78 +13,63 @@ int parseInput(char ui[]);
 // Start of everything
 int main(int argc, char *argv[]) {
 
-	printf("%s\n", "Shell version 1.1 Created January 2022");
-	help();
+    printf("%s\n", "Shell version 1.1 Created January 2022");
+    help();
 
-	FILE *tty = fopen("/dev/tty", "r"); // default interact FILE stream to read user inputs
-	FILE *file_toread;					
-	
-	char *input_piece;
-	char prompt = '$';  				// Shell prompt
-	char userInput[MAX_USER_INPUT];		// user's input stored here
-	int errorCode = 0;					// zero means no error, default
-	//init user input
-	for (int i=0; i<MAX_USER_INPUT; i++)
-		userInput[i] = '\0';
-	
-	//init shell memory
-	mem_init();
+    char prompt = '$';  				// Shell prompt
+    char userInput[MAX_USER_INPUT];		// user's input stored here
+    int errorCode = 0;					// zero means no error, default
 
+    //init user input
+    for (int i=0; i<MAX_USER_INPUT; i++)
+        userInput[i] = '\0';
 
-	while(1) {							
-		printf("%c ",prompt);
-		// when we have a input file redirected to stdin, change
-		// the default write place
-		if (stdin != NULL) {
-			file_toread = stdin;
-		}
+    //init shell memory
+    mem_init();
 
-		if (feof(stdin)) file_toread = tty;
-		// by default, read from the interactive input tty
-		fgets(userInput, MAX_USER_INPUT-1, file_toread);
+    while(1) {							
+        printf("%c ",prompt);
+        if (!fgets(userInput, MAX_USER_INPUT-1, stdin)) {
+            break;
+        }
 
-		// split the chained and execute them in a loop
-		input_piece = strtok(userInput,";");
-		while(input_piece != NULL){
-			errorCode = parseInput(input_piece);
-			if (errorCode == -1) exit(99);	// ignore all other errors
-			input_piece = strtok(NULL,";");
-			
-		}
-		memset(userInput, 0, sizeof(userInput));
+        errorCode = parseInput(userInput);
+        if (errorCode == -1) exit(99);	// ignore all other errors
+        memset(userInput, 0, sizeof(userInput));
 
-	}
+    }
 
-	return 0;
+    return 0;
 
 }
 
 // Extract words from the input then call interpreter
 int parseInput(char ui[]) {
- 
-	char tmp[200];
-	char *words[100];							
-	int a,b;							
-	int w=0; // extraced word's index (word0,word1,...)
 
-	for(a=0; ui[a]==' ' && a<1000; a++);		// skip white spaces at begining of the line
+    char tmp[200];
+    char *words[100];
+    int a,b;
+    int w=0; // wordID
 
-	while(ui[a] != '\0' && a<1000) { // keep iterating till the end of the line
+    for(a=0; ui[a]==' ' && a<1000; a++);		// skip white spaces
 
-		for(b=0; ui[a]!='\0' && ui[a]!=' ' && a<1000; a++, b++)
-			tmp[b] = ui[a];						// extract a word
-	 
-		tmp[b] = '\0';
+    while(ui[a] != '\0' && a<1000) {
 
-		words[w] = strdup(tmp);
+        for(b=0; ui[a]!='\0' && ui[a]!=' ' && a<1000; a++, b++)
+            tmp[b] = ui[a];						// extract a word
 
-		w++;
-		
-		if(ui[a] == '\0'){
-			break;
-		}
-		a++; 
-	}
+        tmp[b] = '\0';
 
-	return interpreter(words, w);
+        words[w] = strdup(tmp);
+
+        w++;
+
+        if(ui[a] == '\0'){
+            break;
+        }
+        a++; 
+    }
+
+    words[w] = NULL;
+    return interpreter(words, w);
 }
