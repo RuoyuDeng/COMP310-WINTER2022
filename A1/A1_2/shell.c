@@ -74,7 +74,7 @@ int parseInput(char ui[]) {
 	int a,b;							
 	int w=0; // extraced word's index (word0,word1,...)
 
-
+	// clear words so that we do not mis-read any useful info
 	memset(words, 0, sizeof(words));
 	for(a=0; ui[a]==' ' && a<1000; a++);		// skip white spaces at begining of the line
 
