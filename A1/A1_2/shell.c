@@ -19,11 +19,12 @@ int main(int argc, char *argv[]) {
 	FILE *tty = fopen("/dev/tty", "r"); // default interact FILE stream to read user inputs
 	FILE *file_toread;					
 	
-	char *input_piece;
+	
 	char prompt = '$';  				// Shell prompt
 	char userInput[MAX_USER_INPUT];		// user's input stored here
 	int errorCode = 0;					// zero means no error, default
 	char *ret;
+	char *input_piece;
 	//init user input
 	for (int i=0; i<MAX_USER_INPUT; i++)
 		userInput[i] = '\0';
@@ -51,15 +52,14 @@ int main(int argc, char *argv[]) {
 			while(input_piece != NULL){
 				errorCode = parseInput(input_piece);
 				if (errorCode == -1) exit(99);	// ignore all other errors
-				memset(input_piece, 0, sizeof(input_piece));
+				// memset(input_piece, 0, sizeof(input_piece));
 				input_piece = strtok(NULL,";");
 			}
 		}
 
-		else{
-			errorCode = parseInput(userInput);
-			memset(userInput, 0, sizeof(userInput));	
-		} 
+		errorCode = parseInput(userInput);
+		memset(userInput, 0, sizeof(userInput));
+		char x = 'c';
 	}
 
 	return 0;
@@ -74,6 +74,8 @@ int parseInput(char ui[]) {
 	int a,b;							
 	int w=0; // extraced word's index (word0,word1,...)
 
+
+	memset(words, 0, sizeof(words));
 	for(a=0; ui[a]==' ' && a<1000; a++);		// skip white spaces at begining of the line
 
 	while(ui[a] != '\0' && a<1000) { // keep iterating till the end of the line
