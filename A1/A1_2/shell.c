@@ -23,6 +23,7 @@ int main(int argc, char *argv[]) {
 	char prompt = '$';  				// Shell prompt
 	char userInput[MAX_USER_INPUT];		// user's input stored here
 	int errorCode = 0;					// zero means no error, default
+	char *ret;
 	//init user input
 	for (int i=0; i<MAX_USER_INPUT; i++)
 		userInput[i] = '\0';
@@ -43,16 +44,22 @@ int main(int argc, char *argv[]) {
 		// by default, read from the interactive input tty
 		fgets(userInput, MAX_USER_INPUT-1, file_toread);
 
-		// split the chained and execute them in a loop
-		input_piece = strtok(userInput,";");
-		while(input_piece != NULL){
-			errorCode = parseInput(input_piece);
-			if (errorCode == -1) exit(99);	// ignore all other errors
-			input_piece = strtok(NULL,";");
-			
+		// split the chained and execute them in a loop IF found a ';'
+		ret = strchr(userInput,';');
+		if(ret!=NULL){
+			input_piece = strtok(userInput,";");
+			while(input_piece != NULL){
+				errorCode = parseInput(input_piece);
+				if (errorCode == -1) exit(99);	// ignore all other errors
+				memset(input_piece, 0, sizeof(input_piece));
+				input_piece = strtok(NULL,";");
+			}
 		}
-		memset(userInput, 0, sizeof(userInput));
 
+		else{
+			errorCode = parseInput(userInput);
+			memset(userInput, 0, sizeof(userInput));	
+		} 
 	}
 
 	return 0;

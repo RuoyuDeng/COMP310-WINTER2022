@@ -54,6 +54,7 @@ void mem_set_value(char *var, char **value) {
             for (j = 0; value[j] != NULL; j++) {
                 shellmemory[i].value[j] = strdup(value[j]);
             }
+            shellmemory[i].value[j] = NULL;
             return;
         }
     }
