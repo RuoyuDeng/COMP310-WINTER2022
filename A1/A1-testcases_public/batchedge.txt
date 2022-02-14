@@ -1,0 +1,3 @@
+set x abc; set y 123
+print y; print x
+set y 1 1 0; print y; print x; set x a; print x; echo $x

@@ -59,7 +59,6 @@ int main(int argc, char *argv[]) {
 
 		errorCode = parseInput(userInput);
 		memset(userInput, 0, sizeof(userInput));
-		char x = 'c';
 	}
 
 	return 0;
