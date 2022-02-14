@@ -1,0 +1,15 @@
+print x
+set x 10 20 30
+print x 
+set x 10
+print x
+echo $x
+set x 1 2 3 4 &
+print x
+echo x
+echo "hiii hello"
+set ! x 234
+set & 11 2 3
+set x 2 & &*
+set x abc; set y 123; print y; print x
+set x abc &; set y 1 1 0; print y; print x; set x a; print x; set x ! 8; echo $x; echo "hi"
