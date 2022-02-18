@@ -3,12 +3,19 @@
 #include<stdio.h>
 
 #define MAX_TOKEN_SIZE 6
+#define MAX_LINE_SIZE 100
+
 
 struct memory_struct{
     char *var;
     char *value[MAX_TOKEN_SIZE];
+    char *line[MAX_LINE_SIZE]; // used to store a line for the file
 };
-
+//a.txt
+// var = a.txt1 value= line1
+/*
+var a.txt2 value line2
+*/
 struct memory_struct shellmemory[1000];
 
 // Helper functions

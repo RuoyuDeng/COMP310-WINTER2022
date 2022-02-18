@@ -3,6 +3,7 @@
 #include <string.h> 
 
 #include "shellmemory.h"
+#include "scheduler.h"
 #include "shell.h"
 
 int MAX_ARGS_SIZE = 100;
@@ -132,18 +133,35 @@ int echo(char* var) {
     printf("\n");
 }
 
-
+// Task 1: modify run
 int run(char* script){
     int errCode = 0;
+
+    
     char line[1000];
     char *line_piece;
     char *ret;
+
+
+    //loadfile()
+    
+
+
     FILE *p = fopen(script,"rt");  // the program is in a file
 
     if(p == NULL){
 		return badcommandFileDoesNotExist();
 	}
+    // load all lines of code into memory space (set_file)
+    // TODO:
+    
 
+
+
+
+
+    // read from memory space with the start index and max_len of codes to make sure every line gets executed
+    // send to shell to execute based on PCB which is the return type of loadfile
 	fgets(line,999,p);
 	while(1){
 		// break the line into pieces
@@ -157,7 +175,7 @@ int run(char* script){
             }
         }
 		
-		
+        errCode = parseInput(line);
 		memset(line, 0, sizeof(line)); // Sets the first num bytes of the block of memory pointed by ptr to the specified value
 
 		if(feof(p)){
