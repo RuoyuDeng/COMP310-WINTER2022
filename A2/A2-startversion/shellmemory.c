@@ -124,8 +124,10 @@ char **mem_get_value(char *var_in) {
 }
 
 // run all the lines from script stored in shell memory space
-int mem_run_lines(pcb_node *head, int start_index,int total_lines){
-    int cur_index = start_index;
+void mem_run_lines(pcb_node *head){
+    // int cur_index = start_index;
+    int cur_index = head->spot_index;
+    int total_lines = head->total_lines;
     int errorCode = 0;
     char line[100];
     char *line_piece;
@@ -147,11 +149,23 @@ int mem_run_lines(pcb_node *head, int start_index,int total_lines){
         }
 
         // if it does not, then execute the line normally
-        errorCode = parseInput(line);
+        parseInput(line);
         // done with the current line, record in PCB that we need to do next line
         head->line_index++;
         memset(line,0,sizeof(line));
     }
-    return 0;
+    return;
     
+}
+
+
+void mem_cleanup(pcb_node *head){
+    int cur_index = head->spot_index;
+    int total_lines = head->total_lines;
+
+    for(cur_index; cur_index < total_lines; cur_index++){
+        shellmemory[cur_index].var = "none";
+        memset(shellmemory[cur_index].line,0,sizeof(shellmemory[cur_index].line));
+    }
+
 }

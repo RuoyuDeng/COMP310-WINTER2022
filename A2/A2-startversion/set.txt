@@ -1,2 +1,2 @@
-set x 10
+set x 10; set y 20; print y
 print x

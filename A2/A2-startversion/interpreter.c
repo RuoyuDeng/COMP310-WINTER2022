@@ -136,16 +136,24 @@ int echo(char* var) {
 // Task 1: modify run
 int run(char* filename){
     int errCode = 0;
-    pcb_node *ready_head = NULL;
+    pcb_node *ready_head = malloc(sizeof(pcb_node)); // ready queue head
+    // if the spot_index is -3, means it is not initiallized yet
+    ready_head->spot_index = -3; 
 
     //loadfile()
-    // TODO: implement the ready queue in here
     errCode = loadfile(filename,ready_head);
     if(errCode != 0) return -1;
-     // ALL info stored in ready_head
+
+    // ALL info stored in ready_head
     // 1. start index of shell memory
     // 2. which line we are working on (incremented in mem_run_lines)
     // 3. max number of iteration 
-    errCode = mem_run_lines(ready_head,ready_head->spot_index,ready_head->total_lines);
+    mem_run_lines(ready_head);
+
+    // clean up
+    // 1. remove all lines of code from shell memory space
+    mem_cleanup(ready_head);
+    // 2. remove ready queue (made of pcb node), since there is only one node so we just free it
+    free(ready_head);
     return errCode;
 }

@@ -10,9 +10,19 @@ int global_pid = 2000;
 void append_pcb(pcb_node *head,int spot_index,int line_index,int total_lines){
     pcb_node *cur_node = head;
     // head does not exist, create a new head
-    if(head == NULL){
-        head = malloc(sizeof(pcb_node));
+    // BUG!! CREATION OF NEW HEAD does not work somehow
+    // if(head == NULL){
+    //     head = malloc(sizeof(pcb_node));
+    //     head->pid = global_pid;
+    //     head->spot_index = spot_index;
+    //     head->line_index = line_index;
+    //     head->total_lines = total_lines;
+    //     head->next = NULL;
+    //     return;
+    // }
+    if(cur_node->spot_index == -3){
         head->pid = global_pid;
+        global_pid ++;
         head->spot_index = spot_index;
         head->line_index = line_index;
         head->total_lines = total_lines;
@@ -21,6 +31,7 @@ void append_pcb(pcb_node *head,int spot_index,int line_index,int total_lines){
     }
     
     // head exists, find the end of the linked list
+    // spot_index != -3, it is a valid head
     while(cur_node->next != NULL){
         cur_node = cur_node->next;
     }
@@ -33,7 +44,7 @@ void append_pcb(pcb_node *head,int spot_index,int line_index,int total_lines){
     cur_node->next->line_index = line_index;
     cur_node->next->total_lines = total_lines;
     cur_node->next->next = NULL;
-
+    return;
 }
 
 // FCFS ONLY (remove head)
@@ -64,6 +75,7 @@ int loadfile(char *filename, pcb_node *ready_head){
 
     // load all lines of code into memory space (set_file)
     while(1){
+        if(feof(file)) break;
         // make a copy of existing filename
         strcpy(cpname,filename);
         // make sure the variable name is correct
@@ -78,14 +90,15 @@ int loadfile(char *filename, pcb_node *ready_head){
         else if (start_line_index == -1){
             printf("No more space to insert variable! \n");
             return -1;
-        }   
-        if(feof(file)) break;
+        } 
+        else mem_set_lines(cpname,line);
+
+        
         fgets(line,999,file);
         lineindex++;
     }
 
     fclose(file);
-    //append the current pcb into ready queue head (might be NULL)
     append_pcb(ready_head,start_line_index,0,lineindex);
     return 0;
 }
