@@ -10,5 +10,5 @@ typedef struct pcb{
 
 } pcb_node;
 int loadfile(char *filename,pcb_node *ready_head);
-
+pcb_node* pophead_pcb(pcb_node **ptr_head);
 #endif

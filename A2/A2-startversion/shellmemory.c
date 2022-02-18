@@ -105,7 +105,7 @@ int mem_set_lines(char *var, char *value) {
             return i;
         } 
     }
-
+    i = 1000;
     return -1;
 
 }
@@ -132,7 +132,7 @@ void mem_run_lines(pcb_node *head){
     char line[100];
     char *line_piece;
     char *ret;
-    for(cur_index; cur_index<total_lines; cur_index++){
+    for(cur_index; cur_index<(head->spot_index)+total_lines; cur_index++){
         // clean up the line buffer to store the command
         memset(line,0,sizeof(line));
         // fgets(line,100,shellmemory[cur_index].line);

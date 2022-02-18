@@ -16,6 +16,7 @@ int print(char* var);
 int run(char* script);
 int echo(char* var);
 int badcommandFileDoesNotExist();
+int fcfspoly(char* filenames[], int filenum);
 
 // Interpret commands and their arguments
 int interpreter(char* command_args[], int args_size){
@@ -61,6 +62,32 @@ int interpreter(char* command_args[], int args_size){
     } else if (strcmp(command_args[0], "my_ls")==0) {
         if (args_size != 1) return badcommand();
         return system("ls -1");
+    } else if (strcmp(command_args[0], "exec")==0) {
+
+        if (args_size >= 3 && args_size <= 5) {
+            // check for identical files
+            if(args_size > 3){
+                for(int i = 1; i<args_size-1; i++){
+                    for(int j = i+1; j<args_size-1; j++){
+                        if(strcmp(command_args[i],command_args[j]) == 0){
+                            printf("Identical files found, Error\n");
+                            return badcommand();
+                        }       
+                    }
+                }
+            }
+            // exec prog1 prog2 prog3 FCFS (command_args)
+            if(strcmp(command_args[args_size-1],"FCFS") == 0){
+                // fcfspoly(1. the address of first file, 2. total number of files to read)
+                return fcfspoly(command_args,args_size-2);
+            }
+            
+
+            // strcmp(command_args[args_size-1],"SJF")
+            // strcmp(command_args[args_size-1],"RR")
+            // strcmp(command_args[args_size-1],"AGING")
+        }
+        return badcommand();
     } else return badcommand();
 }
 
@@ -71,7 +98,8 @@ help			Displays all the commands\n \
 quit			Exits / terminates the shell with “Bye!”\n \
 set VAR STRING		Assigns a value to shell memory\n \
 print VAR		Displays the STRING assigned to VAR\n \
-run SCRIPT.TXT		Executes the file SCRIPT.TXT\n ";
+run SCRIPT.TXT		Executes the file SCRIPT.TXT\n \
+exec prog1 prog2 prog3 POLICY     Executes up to 3 concurrent programs, according to a given scheduling policy ";
     printf("%s\n", help_string);
     return 0;
 }
@@ -142,8 +170,10 @@ int run(char* filename){
 
     //loadfile()
     errCode = loadfile(filename,ready_head);
-    if(errCode != 0) return -1;
-
+    if(errCode != 0) {
+        printf("Memory out of space error\n");
+        return errCode;
+    }
     // ALL info stored in ready_head
     // 1. start index of shell memory
     // 2. which line we are working on (incremented in mem_run_lines)
@@ -156,4 +186,37 @@ int run(char* filename){
     // 2. remove ready queue (made of pcb node), since there is only one node so we just free it
     free(ready_head);
     return errCode;
+}
+
+
+// Task 2: exec with FCFS
+
+int fcfspoly(char* filenames[], int filenum){
+    int errCode = 0;
+    pcb_node *ready_head = malloc(sizeof(pcb_node));
+    pcb_node *work_node = NULL;
+    ready_head->spot_index = -3;
+
+    // set up ready queue and load scripts into memory
+    for(int i = 1; i <= filenum; i++){
+        errCode = loadfile(filenames[i],ready_head);
+        if(errCode != 0) {
+            printf("Memory out of space error\n");
+            return errCode;
+        }
+    }
+
+    while(1){  
+        work_node = pophead_pcb(&ready_head);
+        mem_run_lines(work_node);
+        if(ready_head == NULL) break;
+    }
+
+
+
+
+
+    // clean up
+    // 1. ready_head
+    // 2. all lines of code
 }

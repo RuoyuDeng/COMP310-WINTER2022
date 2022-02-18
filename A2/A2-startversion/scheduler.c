@@ -9,20 +9,10 @@ int global_pid = 2000;
 // FOR ALL STRATEGIES: add to tail
 void append_pcb(pcb_node *head,int spot_index,int line_index,int total_lines){
     pcb_node *cur_node = head;
-    // head does not exist, create a new head
-    // BUG!! CREATION OF NEW HEAD does not work somehow
-    // if(head == NULL){
-    //     head = malloc(sizeof(pcb_node));
-    //     head->pid = global_pid;
-    //     head->spot_index = spot_index;
-    //     head->line_index = line_index;
-    //     head->total_lines = total_lines;
-    //     head->next = NULL;
-    //     return;
-    // }
+
+
     if(cur_node->spot_index == -3){
         head->pid = global_pid;
-        global_pid ++;
         head->spot_index = spot_index;
         head->line_index = line_index;
         head->total_lines = total_lines;
@@ -38,8 +28,7 @@ void append_pcb(pcb_node *head,int spot_index,int line_index,int total_lines){
     
     // define the new pcb node & set up fileds
     cur_node->next = malloc(sizeof(pcb_node));
-    cur_node->next->pid = global_pid;
-    global_pid++;
+    cur_node->next->pid = (cur_node->pid) + 1;  // current pid based on previous one
     cur_node->next->spot_index = spot_index;
     cur_node->next->line_index = line_index;
     cur_node->next->total_lines = total_lines;
@@ -48,9 +37,10 @@ void append_pcb(pcb_node *head,int spot_index,int line_index,int total_lines){
 }
 
 // FCFS ONLY (remove head)
-void pophead_pcb(pcb_node **ptr_head){
+pcb_node* pophead_pcb(pcb_node **ptr_head){
     pcb_node *tmp_head = *ptr_head;
     *ptr_head = tmp_head->next;
+    return tmp_head;
 }
 
 
@@ -61,6 +51,7 @@ int loadfile(char *filename, pcb_node *ready_head){
     char *line_piece;
     char *ret;
     int lineindex = 0;
+    int memory_overload;
     int start_line_index = -2;
     char file_var_buffer[30];
     FILE *file = fopen(filename,"rt");  // the program is in a file
@@ -71,11 +62,12 @@ int loadfile(char *filename, pcb_node *ready_head){
         return 3;
 	}
     // get all lines of code
-    fgets(line,999,file);
+    memset(line,0,sizeof(line));
+    // fgets(line,999,file);
 
     // load all lines of code into memory space (set_file)
-    while(1){
-        if(feof(file)) break;
+    while(fgets(line, sizeof(line), file) != NULL){
+        // if(feof(file)) break;
         // make a copy of existing filename
         strcpy(cpname,filename);
         // make sure the variable name is correct
@@ -91,10 +83,10 @@ int loadfile(char *filename, pcb_node *ready_head){
             printf("No more space to insert variable! \n");
             return -1;
         } 
-        else mem_set_lines(cpname,line);
-
-        
-        fgets(line,999,file);
+        else {
+            // too many lines of codes
+            if(mem_set_lines(cpname,line) == -1) return -1;
+        }
         lineindex++;
     }
 

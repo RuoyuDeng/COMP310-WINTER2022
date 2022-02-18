@@ -10,7 +10,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/A2/A2-startversion/mysh",
+            "program": "${workspaceFolder}/A2/A2-backup/mysh",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
