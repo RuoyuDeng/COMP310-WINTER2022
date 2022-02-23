@@ -16,7 +16,15 @@ int print(char* var);
 int run(char* script);
 int echo(char* var);
 int badcommandFileDoesNotExist();
+int outofMemoryError();
 int fcfspoly(char* filenames[], int filenum);
+
+int sjfpoly(char* filenames[], int filenum);
+void swappcb(pcb_node *largeNode, pcb_node *smallNode);
+void sortReadyQueue(pcb_node *head, char* mode);
+
+int rrpoly(char* filenames[], int filenum);
+int agingpoly(char* filenames[], int filenum);
 
 // Interpret commands and their arguments
 int interpreter(char* command_args[], int args_size){
@@ -77,15 +85,20 @@ int interpreter(char* command_args[], int args_size){
                 }
             }
             // exec prog1 prog2 prog3 FCFS (command_args)
+            // all polies (1. the address of first file, 2. total number of files to read)
             if(strcmp(command_args[args_size-1],"FCFS") == 0){
-                // fcfspoly(1. the address of first file, 2. total number of files to read)
+                
                 return fcfspoly(command_args,args_size-2);
             }
-            
-
-            // strcmp(command_args[args_size-1],"SJF")
-            // strcmp(command_args[args_size-1],"RR")
-            // strcmp(command_args[args_size-1],"AGING")
+            else if (strcmp(command_args[args_size-1],"SJF") == 0){
+                return sjfpoly(command_args,args_size-2);
+            }
+            else if(strcmp(command_args[args_size-1],"RR") == 0){
+                return rrpoly(command_args,args_size-2);
+            }
+            else if(strcmp(command_args[args_size-1],"AGING") == 0){
+                return agingpoly(command_args,args_size-2);
+            }
         }
         return badcommand();
     } else return badcommand();
@@ -120,8 +133,15 @@ int badcommandFileDoesNotExist(){
     return 3;
 }
 
+int outofMemoryError(){
+    printf("Out of memory, can not set new variable\n");
+    return -1;
+}
+
 int set(char* var, char** value){
-    mem_set_value(var, value);
+    if(mem_set_value(var, value) == -1){
+        return outofMemoryError();
+    }
     return 0;
 }
 
@@ -170,15 +190,16 @@ int run(char* filename){
 
     //loadfile()
     errCode = loadfile(filename,ready_head);
-    if(errCode != 0) {
-        printf("Memory out of space error\n");
-        return errCode;
+    if(errCode == -1) {
+        return outofMemoryError();
+    }else if (errCode == 3){
+        return badcommandFileDoesNotExist();
     }
     // ALL info stored in ready_head
     // 1. start index of shell memory
     // 2. which line we are working on (incremented in mem_run_lines)
     // 3. max number of iteration 
-    mem_run_lines(ready_head);
+    mem_run_lines(ready_head,ready_head->total_lines);
 
     // clean up
     // 1. remove all lines of code from shell memory space
@@ -194,29 +215,247 @@ int run(char* filename){
 int fcfspoly(char* filenames[], int filenum){
     int errCode = 0;
     pcb_node *ready_head = malloc(sizeof(pcb_node));
+    pcb_node *clean_head = ready_head;
+    pcb_node *tmp_head;
     pcb_node *work_node = NULL;
     ready_head->spot_index = -3;
 
     // set up ready queue and load scripts into memory
     for(int i = 1; i <= filenum; i++){
         errCode = loadfile(filenames[i],ready_head);
-        if(errCode != 0) {
-            printf("Memory out of space error\n");
-            return errCode;
+        if(errCode == -1) {
+            return outofMemoryError();
+        }else if (errCode == 3){
+            return badcommandFileDoesNotExist();
         }
     }
-
+    // clean_head = ready_head;
     while(1){  
         work_node = pophead_pcb(&ready_head);
-        mem_run_lines(work_node);
+        mem_run_lines(work_node,work_node->total_lines);
+        if(ready_head == NULL) break;
+    }
+    mem_cleanup(clean_head);
+    while(1){
+        if(clean_head != NULL) {
+            tmp_head = clean_head;
+            free(tmp_head);
+            clean_head = clean_head->next;
+        } else break;
+    }
+    return 0;
+
+}
+
+// swap 2 nodes
+void swappcb(pcb_node *largeNode, pcb_node *smallNode){
+    int tmp_pid = smallNode->pid;
+    int tmp_spotindex = smallNode->spot_index;
+    int tmp_lineindex = smallNode->line_index;
+    int tmp_totallines = smallNode->total_lines;
+    int tmp_jobscore = smallNode->job_score;
+
+    smallNode->pid = largeNode->pid;
+    smallNode->spot_index = largeNode->spot_index;
+    smallNode->line_index = largeNode->line_index;
+    smallNode->total_lines = largeNode->total_lines;
+    smallNode->job_score = largeNode->job_score;
+
+    largeNode->pid = tmp_pid;
+    largeNode->spot_index = tmp_spotindex;
+    largeNode->line_index = tmp_lineindex;
+    largeNode->total_lines = tmp_totallines;
+    largeNode->job_score = tmp_jobscore;
+}
+
+void sortReadyQueue(pcb_node *head, char *mode){
+    int done = 1;
+
+    pcb_node *queue_end = NULL;
+    pcb_node *cur_node;
+
+    // NULL head check
+    if(head == NULL) return;
+    
+    while(done){
+        // assume we can finish sorting this iteration -> no swapping happened means it is sorted (small to large)
+        done = 0;
+        cur_node = head;
+        
+        // keep swapping until the max total lines of pcb goes to the end of queue
+        while(cur_node->next != queue_end){
+            if(strcmp(mode,"SJF") == 0){
+                if(cur_node->total_lines > cur_node->next->total_lines){
+                    swappcb(cur_node,cur_node->next);
+                    // some swap happened, keep iterating
+                    done = 1;
+                }
+            }
+            else if (strcmp(mode,"AGING") == 0){
+                if(cur_node->job_score > cur_node->next->job_score){
+                    swappcb(cur_node,cur_node->next);
+                    // some swap happened, keep iterating
+                    done = 1;
+                }
+            }
+            
+            cur_node = cur_node->next;
+        }
+        // inner loop terminates when cur_node->next at the end, treat cur_node as the new end
+        queue_end = cur_node;
+    }
+}
+
+// Task 3: SJF
+int sjfpoly(char* filenames[], int filenum){
+    int errCode = 0;
+    pcb_node *ready_head = malloc(sizeof(pcb_node));
+    pcb_node *clean_head;
+    pcb_node *tmp_head;
+    pcb_node *work_node = NULL;
+    ready_head->spot_index = -3;
+
+    // set up ready queue and load scripts into memory
+    for(int i = 1; i <= filenum; i++){
+        errCode = loadfile(filenames[i],ready_head);
+        if(errCode == -1) {
+            return outofMemoryError();
+        }else if (errCode == 3){
+            return badcommandFileDoesNotExist();
+        }
+    }
+    sortReadyQueue(ready_head,"SJF");
+    clean_head = ready_head;
+    while(1){  
+        work_node = pophead_pcb(&ready_head);
+        mem_run_lines(work_node,work_node->total_lines);
         if(ready_head == NULL) break;
     }
 
+    mem_cleanup(clean_head);
+    while(1){
+        if(clean_head != NULL) {
+            tmp_head = clean_head;
+            free(tmp_head);
+            clean_head = clean_head->next;
+        } else break;
+    }
+    return 0;
 
+}
 
+int rrpoly(char* filenames[], int filenum){
+    int errCode = 0;
+    int rest_lines = 0;
+    pcb_node *ready_head = malloc(sizeof(pcb_node));
+    pcb_node *clean_head = ready_head;
+    pcb_node *tmp_head;
+    pcb_node *work_node = NULL;
+    ready_head->spot_index = -3;
 
+    // set up ready queue and load scripts into memory
+    for(int i = 1; i <= filenum; i++){
+        errCode = loadfile(filenames[i],ready_head);
+        if(errCode == -1) {
+            return outofMemoryError();
+        }else if (errCode == 3){
+            return badcommandFileDoesNotExist();
+        }
+    }
 
-    // clean up
-    // 1. ready_head
-    // 2. all lines of code
+    while(1){
+        if(ready_head == NULL) break;
+        work_node = pophead_pcb(&ready_head);
+        rest_lines = work_node->total_lines - work_node->line_index;
+        if(rest_lines==1) mem_run_lines(work_node,1);
+        else mem_run_lines(work_node,2);
+        // current work_node is done, do not add to tail
+        if(work_node->line_index == work_node->total_lines) continue;
+        append_pcb(ready_head,work_node->spot_index,work_node->line_index,work_node->total_lines,0);
+    }
+    mem_cleanup(clean_head);
+    while(1){
+        if(clean_head != NULL) {
+            tmp_head = clean_head;
+            free(tmp_head);
+            clean_head = clean_head->next;
+        } else break;
+    }
+    return 0;
+}
+
+int agingpoly(char* filenames[], int filenum){
+    int errCode = 0;
+    int rest_lines = 0;
+    int findSwap;
+    pcb_node *ready_head = malloc(sizeof(pcb_node));
+    pcb_node *clean_head = ready_head;
+    pcb_node *tmp_head = NULL;
+    pcb_node *poped_head = NULL;
+    pcb_node *aging_head = NULL;
+    pcb_node *swap_node;
+    ready_head->spot_index = -3;
+
+    // set up ready queue and load scripts into memory
+    for(int i = 1; i <= filenum; i++){
+        errCode = loadfile(filenames[i],ready_head);
+        if(errCode == -1) {
+            return outofMemoryError();
+        }else if (errCode == 3){
+            return badcommandFileDoesNotExist();
+        }
+    }
+
+    // sort the program based on job score
+    sortReadyQueue(ready_head,"AGING");
+    while(1){
+        if(ready_head == NULL) break;
+        // reset findSwap and swap_node
+        findSwap = 0;
+        swap_node = NULL;
+        // run for 1 instruction for head
+        mem_run_lines(ready_head,1); 
+        
+        // start aging and check if needs to swap the head with the smallest job score
+        aging_head = ready_head->next;
+        while(aging_head != NULL){
+            if(aging_head->job_score > 0){
+                aging_head->job_score--;
+                // where we do prompt and swap
+                if(aging_head->job_score < ready_head->job_score && !findSwap){
+                    swap_node = aging_head;
+                    findSwap = 1;
+                }
+            }
+            aging_head = aging_head->next;
+        }
+
+        // check if ready_head is done, if so, pop it out
+        if(ready_head->line_index == ready_head->total_lines){
+            pophead_pcb(&ready_head);
+            continue;
+        }
+
+        // if find anything to swap, do it
+        if(swap_node != NULL){
+            // if its the next, pop it and append it at the end
+            if(swap_node == ready_head->next){
+                poped_head = pophead_pcb(&ready_head);
+                append_pcb(poped_head,poped_head->spot_index,poped_head->line_index,poped_head->total_lines,poped_head->job_score);
+            }
+            // if it is not the next, swap
+            // TO TRY OUT TEST CASES
+            else{
+                swappcb(swap_node,ready_head);
+            }
+        }
+
+        // TO DO IMPLEMENT CLEAN UP
+
+        // // only get to this line if we did not pop ready_head
+        // // thus, sort the queue, the process with smaller socre will be the new head
+        // sortReadyQueue(ready_head,"AGING");
+        // puts("");
+        
+    }
 }

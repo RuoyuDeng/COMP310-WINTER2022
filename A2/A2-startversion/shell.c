@@ -58,12 +58,19 @@ int main(int argc, char *argv[]) {
 		}
 
 		errorCode = parseInput(userInput);
+		if (errorCode == -1) exit(99);
 		memset(userInput, 0, sizeof(userInput));
 	}
 
 	return 0;
 
 }
+
+// parseInput <- interpreter <- invalid function calls (full memory for set..)
+// 1: bad command
+// 3: file not found
+// 0: nothing goes wrong
+// -1: set out of memory (either too many lines of code, or too many variables)
 
 // Extract words from the input then call interpreter
 int parseInput(char ui[]) {

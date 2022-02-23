@@ -55,32 +55,34 @@ void mem_init(){
 }
 
 // Set key value pair
-void mem_set_value(char *var, char **value) {
-
+// return the spot index where we set the variable (>=0)
+// return -1 if unable to set the variable (memory full)
+// reserve the first 100 spots for variables (index 0 -> 99)
+int mem_set_value(char *var, char **value) {
+    
     int i, j;
-
-    for (i=0; i<1000; i++){
+    for (i=0; i<100; i++){
         if (strcmp(shellmemory[i].var, var) == 0){
             for (j = 0; value[j] != NULL; j++) {
                 shellmemory[i].value[j] = strdup(value[j]);
             }
             shellmemory[i].value[j] = NULL;
-            return;
+            return i;
         }
     }
 
     //Value does not exist, need to find a free spot.
-    for (i=0; i<1000; i++){
+    for (i=0; i<100; i++){
         if (strcmp(shellmemory[i].var, "none") == 0){
             shellmemory[i].var = strdup(var);
             for (j = 0; value[j] != NULL; j++) {
                 shellmemory[i].value[j] = strdup(value[j]);
             }
-            return;
+            return i;
         } 
     }
 
-    return;
+    return -1;
 
 }
 
@@ -90,7 +92,7 @@ int mem_set_lines(char *var, char *value) {
 
     int i;
     // check if the current variable exists in the memory space
-    for (i=0; i<1000; i++){
+    for (i=100; i<1000; i++){
         if (strcmp(shellmemory[i].var, var) == 0){
             strcpy(shellmemory[i].line,value);
             return i;
@@ -98,14 +100,14 @@ int mem_set_lines(char *var, char *value) {
     }
 
     //Value does not exist, need to find a free spot.
-    for (i=0; i<1000; i++){
+    for (i=100; i<1000; i++){
         if (strcmp(shellmemory[i].var, "none") == 0){
             shellmemory[i].var = strdup(var);
             strcpy(shellmemory[i].line,value);
             return i;
         } 
     }
-    i = 1000;
+    // i = 1000;
     return -1;
 
 }
@@ -124,15 +126,18 @@ char **mem_get_value(char *var_in) {
 }
 
 // run all the lines from script stored in shell memory space
-void mem_run_lines(pcb_node *head){
+void mem_run_lines(pcb_node *head, int num_lines){
     // int cur_index = start_index;
-    int cur_index = head->spot_index;
-    int total_lines = head->total_lines;
+    int cur_index;
+    int start_index;
     int errorCode = 0;
     char line[100];
     char *line_piece;
     char *ret;
-    for(cur_index; cur_index<(head->spot_index)+total_lines; cur_index++){
+    if(head->line_index == 0) cur_index = head->spot_index;
+    cur_index = head->spot_index + head->line_index;
+    start_index = cur_index;
+    for(cur_index; cur_index< start_index + num_lines; cur_index++){
         // clean up the line buffer to store the command
         memset(line,0,sizeof(line));
         // fgets(line,100,shellmemory[cur_index].line);
@@ -161,11 +166,24 @@ void mem_run_lines(pcb_node *head){
 
 void mem_cleanup(pcb_node *head){
     int cur_index = head->spot_index;
+    int start_index = cur_index;
     int total_lines = head->total_lines;
 
-    for(cur_index; cur_index < total_lines; cur_index++){
-        shellmemory[cur_index].var = "none";
-        memset(shellmemory[cur_index].line,0,sizeof(shellmemory[cur_index].line));
+    while(1){
+        for(cur_index; cur_index < start_index + total_lines; cur_index++){
+            shellmemory[cur_index].var = "none";
+            memset(shellmemory[cur_index].line,0,sizeof(shellmemory[cur_index].line));
+        }
+        head = head->next;
+        if(head == NULL) break;
+        cur_index = head->spot_index;
+        start_index = cur_index;
+        total_lines = head->total_lines;
     }
-
+   
+    for(int i = 100; i<1000; i++){
+        if(strcmp(shellmemory[i].var, "none") != 0)
+            printf("Var: %s, Line: %s \n",shellmemory[i].var,shellmemory[i].line);
+    }
+    return;
 }

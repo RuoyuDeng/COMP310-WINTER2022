@@ -7,7 +7,7 @@
 int global_pid = 2000;
 
 // FOR ALL STRATEGIES: add to tail
-void append_pcb(pcb_node *head,int spot_index,int line_index,int total_lines){
+void append_pcb(pcb_node *head,int spot_index,int line_index,int total_lines, int job_score){
     pcb_node *cur_node = head;
 
 
@@ -16,6 +16,7 @@ void append_pcb(pcb_node *head,int spot_index,int line_index,int total_lines){
         head->spot_index = spot_index;
         head->line_index = line_index;
         head->total_lines = total_lines;
+        head->job_score = job_score;
         head->next = NULL;
         return;
     }
@@ -32,6 +33,7 @@ void append_pcb(pcb_node *head,int spot_index,int line_index,int total_lines){
     cur_node->next->spot_index = spot_index;
     cur_node->next->line_index = line_index;
     cur_node->next->total_lines = total_lines;
+    cur_node->next->job_score = job_score;
     cur_node->next->next = NULL;
     return;
 }
@@ -42,6 +44,7 @@ pcb_node* pophead_pcb(pcb_node **ptr_head){
     *ptr_head = tmp_head->next;
     return tmp_head;
 }
+
 
 
 
@@ -58,7 +61,7 @@ int loadfile(char *filename, pcb_node *ready_head){
 
     // file does not exist
     if(file == NULL){
-		printf("%s\n", "Bad command: File not found");
+		// printf("%s\n", "Bad command: File not found");
         return 3;
 	}
     // get all lines of code
@@ -91,7 +94,7 @@ int loadfile(char *filename, pcb_node *ready_head){
     }
 
     fclose(file);
-    append_pcb(ready_head,start_line_index,0,lineindex);
+    append_pcb(ready_head,start_line_index,0,lineindex,lineindex);
     return 0;
 }
 
