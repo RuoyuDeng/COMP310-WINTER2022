@@ -206,6 +206,7 @@ int run(char* filename){
     mem_cleanup(ready_head);
     // 2. remove ready queue (made of pcb node), since there is only one node so we just free it
     free(ready_head);
+    mem_print_dirtymem();
     return errCode;
 }
 
@@ -215,8 +216,6 @@ int run(char* filename){
 int fcfspoly(char* filenames[], int filenum){
     int errCode = 0;
     pcb_node *ready_head = malloc(sizeof(pcb_node));
-    pcb_node *clean_head = ready_head;
-    pcb_node *tmp_head;
     pcb_node *work_node = NULL;
     ready_head->spot_index = -3;
 
@@ -229,20 +228,14 @@ int fcfspoly(char* filenames[], int filenum){
             return badcommandFileDoesNotExist();
         }
     }
-    // clean_head = ready_head;
     while(1){  
         work_node = pophead_pcb(&ready_head);
         mem_run_lines(work_node,work_node->total_lines);
+        mem_cleanup(work_node);
+        free(work_node);
         if(ready_head == NULL) break;
     }
-    mem_cleanup(clean_head);
-    while(1){
-        if(clean_head != NULL) {
-            tmp_head = clean_head;
-            free(tmp_head);
-            clean_head = clean_head->next;
-        } else break;
-    }
+    mem_print_dirtymem();
     return 0;
 
 }
@@ -284,6 +277,7 @@ void sortReadyQueue(pcb_node *head, char *mode){
         
         // keep swapping until the max total lines of pcb goes to the end of queue
         while(cur_node->next != queue_end){
+            // sort based on total lines
             if(strcmp(mode,"SJF") == 0){
                 if(cur_node->total_lines > cur_node->next->total_lines){
                     swappcb(cur_node,cur_node->next);
@@ -291,6 +285,7 @@ void sortReadyQueue(pcb_node *head, char *mode){
                     done = 1;
                 }
             }
+            // sort based on job age
             else if (strcmp(mode,"AGING") == 0){
                 if(cur_node->job_score > cur_node->next->job_score){
                     swappcb(cur_node,cur_node->next);
@@ -310,8 +305,6 @@ void sortReadyQueue(pcb_node *head, char *mode){
 int sjfpoly(char* filenames[], int filenum){
     int errCode = 0;
     pcb_node *ready_head = malloc(sizeof(pcb_node));
-    pcb_node *clean_head;
-    pcb_node *tmp_head;
     pcb_node *work_node = NULL;
     ready_head->spot_index = -3;
 
@@ -325,21 +318,15 @@ int sjfpoly(char* filenames[], int filenum){
         }
     }
     sortReadyQueue(ready_head,"SJF");
-    clean_head = ready_head;
     while(1){  
         work_node = pophead_pcb(&ready_head);
         mem_run_lines(work_node,work_node->total_lines);
+        mem_cleanup(work_node);
+        free(work_node);
         if(ready_head == NULL) break;
     }
 
-    mem_cleanup(clean_head);
-    while(1){
-        if(clean_head != NULL) {
-            tmp_head = clean_head;
-            free(tmp_head);
-            clean_head = clean_head->next;
-        } else break;
-    }
+    mem_print_dirtymem();
     return 0;
 
 }
@@ -348,8 +335,6 @@ int rrpoly(char* filenames[], int filenum){
     int errCode = 0;
     int rest_lines = 0;
     pcb_node *ready_head = malloc(sizeof(pcb_node));
-    pcb_node *clean_head = ready_head;
-    pcb_node *tmp_head;
     pcb_node *work_node = NULL;
     ready_head->spot_index = -3;
 
@@ -362,25 +347,23 @@ int rrpoly(char* filenames[], int filenum){
             return badcommandFileDoesNotExist();
         }
     }
-
+    
     while(1){
         if(ready_head == NULL) break;
         work_node = pophead_pcb(&ready_head);
         rest_lines = work_node->total_lines - work_node->line_index;
         if(rest_lines==1) mem_run_lines(work_node,1);
         else mem_run_lines(work_node,2);
-        // current work_node is done, do not add to tail
-        if(work_node->line_index == work_node->total_lines) continue;
-        append_pcb(ready_head,work_node->spot_index,work_node->line_index,work_node->total_lines,0);
+        // current work_node is done, do not add to tail, clean it up
+        if(work_node->line_index == work_node->total_lines) {
+            mem_cleanup(work_node);
+            free(work_node);
+            continue;
+        }
+        append_pcb_tohead(ready_head,work_node);
     }
-    mem_cleanup(clean_head);
-    while(1){
-        if(clean_head != NULL) {
-            tmp_head = clean_head;
-            free(tmp_head);
-            clean_head = clean_head->next;
-        } else break;
-    }
+
+    mem_print_dirtymem();
     return 0;
 }
 
@@ -389,8 +372,6 @@ int agingpoly(char* filenames[], int filenum){
     int rest_lines = 0;
     int findSwap;
     pcb_node *ready_head = malloc(sizeof(pcb_node));
-    pcb_node *clean_head = ready_head;
-    pcb_node *tmp_head = NULL;
     pcb_node *poped_head = NULL;
     pcb_node *aging_head = NULL;
     pcb_node *swap_node;
@@ -430,9 +411,11 @@ int agingpoly(char* filenames[], int filenum){
             aging_head = aging_head->next;
         }
 
-        // check if ready_head is done, if so, pop it out
+        // check if ready_head is done, if so, pop it out and clean it up
         if(ready_head->line_index == ready_head->total_lines){
-            pophead_pcb(&ready_head);
+            poped_head = pophead_pcb(&ready_head);
+            mem_cleanup(poped_head);
+            free(poped_head);
             continue;
         }
 
@@ -440,8 +423,7 @@ int agingpoly(char* filenames[], int filenum){
         if(swap_node != NULL){
             // if its the next, pop it and append it at the end
             if(swap_node == ready_head->next){
-                poped_head = pophead_pcb(&ready_head);
-                append_pcb(poped_head,poped_head->spot_index,poped_head->line_index,poped_head->total_lines,poped_head->job_score);
+                append_pcb_tohead(ready_head,pophead_pcb(&ready_head));
             }
             // if it is not the next, swap
             // TO TRY OUT TEST CASES
@@ -449,13 +431,7 @@ int agingpoly(char* filenames[], int filenum){
                 swappcb(swap_node,ready_head);
             }
         }
-
-        // TO DO IMPLEMENT CLEAN UP
-
-        // // only get to this line if we did not pop ready_head
-        // // thus, sort the queue, the process with smaller socre will be the new head
-        // sortReadyQueue(ready_head,"AGING");
-        // puts("");
         
     }
+    mem_print_dirtymem();
 }

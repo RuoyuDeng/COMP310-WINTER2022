@@ -163,27 +163,27 @@ void mem_run_lines(pcb_node *head, int num_lines){
     
 }
 
-
+// clean up the current SCRIPT (one script at a time)
 void mem_cleanup(pcb_node *head){
     int cur_index = head->spot_index;
     int start_index = cur_index;
     int total_lines = head->total_lines;
 
-    while(1){
-        for(cur_index; cur_index < start_index + total_lines; cur_index++){
-            shellmemory[cur_index].var = "none";
-            memset(shellmemory[cur_index].line,0,sizeof(shellmemory[cur_index].line));
-        }
-        head = head->next;
-        if(head == NULL) break;
-        cur_index = head->spot_index;
-        start_index = cur_index;
-        total_lines = head->total_lines;
+    for(cur_index; cur_index < start_index + total_lines; cur_index++){
+        shellmemory[cur_index].var = "none";
+        memset(shellmemory[cur_index].line,0,sizeof(shellmemory[cur_index].line));
     }
-   
-    for(int i = 100; i<1000; i++){
-        if(strcmp(shellmemory[i].var, "none") != 0)
-            printf("Var: %s, Line: %s \n",shellmemory[i].var,shellmemory[i].line);
-    }
+
     return;
+}
+
+void mem_print_dirtymem(){
+    int find_dirty = 0;
+    for(int i = 100; i<1000; i++){
+        if(strcmp(shellmemory[i].var, "none") != 0){
+            printf("Memory space at: %d,Var: %s, Line: %s,is not cleaned!\n",i,shellmemory[i].var,shellmemory[i].line);
+            find_dirty = 1;
+        }       
+    }
+    if(!find_dirty) printf("All codes from scripts are cleaned.\n");
 }

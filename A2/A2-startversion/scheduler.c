@@ -38,12 +38,22 @@ void append_pcb(pcb_node *head,int spot_index,int line_index,int total_lines, in
     return;
 }
 
+void append_pcb_tohead(pcb_node *head, pcb_node *append_node){
+    pcb_node *tmp_node = head;
+    while(tmp_node->next != NULL){
+        tmp_node = tmp_node->next;
+    }
+    tmp_node->next = append_node;
+}
+
 // FCFS ONLY (remove head)
 pcb_node* pophead_pcb(pcb_node **ptr_head){
     pcb_node *tmp_head = *ptr_head;
     *ptr_head = tmp_head->next;
+    tmp_head->next = NULL;
     return tmp_head;
 }
+
 
 
 
