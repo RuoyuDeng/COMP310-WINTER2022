@@ -7,17 +7,19 @@
 int global_pid = 2000;
 
 // FOR ALL STRATEGIES: add to tail
-void append_pcb(pcb_node *head,int spot_index,int line_index,int total_lines, int job_score){
-    pcb_node *cur_node = head;
+void append_pcb(pcb_node **ptr_head,int spot_index,int line_index,int total_lines, int job_score){
+    pcb_node *cur_node = *ptr_head;
 
 
-    if(cur_node->spot_index == -3){
-        head->pid = global_pid;
-        head->spot_index = spot_index;
-        head->line_index = line_index;
-        head->total_lines = total_lines;
-        head->job_score = job_score;
-        head->next = NULL;
+    if(cur_node == NULL){
+        cur_node = malloc(sizeof(pcb_node));
+        cur_node->pid = global_pid;
+        cur_node->spot_index = spot_index;
+        cur_node->line_index = line_index;
+        cur_node->total_lines = total_lines;
+        cur_node->job_score = job_score;
+        cur_node->next = NULL;
+        *ptr_head = cur_node;
         return;
     }
     
@@ -58,7 +60,7 @@ pcb_node* pophead_pcb(pcb_node **ptr_head){
 
 
 
-int loadfile(char *filename, pcb_node *ready_head){
+int loadfile(char *filename, pcb_node **ptr_head){
     char line[1000];
     char cpname[20];
     char *line_piece;
@@ -76,15 +78,15 @@ int loadfile(char *filename, pcb_node *ready_head){
 	}
     // get all lines of code
     memset(line,0,sizeof(line));
-    // fgets(line,999,file);
 
     // load all lines of code into memory space (set_file)
     while(fgets(line, sizeof(line), file) != NULL){
-        // if(feof(file)) break;
         // make a copy of existing filename
         strcpy(cpname,filename);
+
         // make sure the variable name is correct
         memset(file_var_buffer,0,sizeof(file_var_buffer));
+
         // add the line of index to the end of file name and set it into shell memory
         snprintf(file_var_buffer,sizeof file_var_buffer,"%d",lineindex);
         strcat(cpname,file_var_buffer);
@@ -104,7 +106,7 @@ int loadfile(char *filename, pcb_node *ready_head){
     }
 
     fclose(file);
-    append_pcb(ready_head,start_line_index,0,lineindex,lineindex);
+    append_pcb(ptr_head,start_line_index,0,lineindex,lineindex);
     return 0;
 }
 
