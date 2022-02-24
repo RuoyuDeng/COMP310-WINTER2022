@@ -17,6 +17,7 @@ int run(char* script);
 int echo(char* var);
 int exec(char* filenames[],int arg_size);
 int badcommandFileDoesNotExist();
+int badcommandSameFile();
 int outofMemoryError();
 
 
@@ -65,15 +66,13 @@ int interpreter(char* command_args[], int args_size){
         if (args_size != 1) return badcommand();
         return system("ls -1");
     } else if (strcmp(command_args[0], "exec")==0) {
-
         if (args_size >= 3 && args_size <= 5) {
             // check for identical files
             if(args_size > 3){
                 for(int i = 1; i<args_size-1; i++){
                     for(int j = i+1; j<args_size-1; j++){
                         if(strcmp(command_args[i],command_args[j]) == 0){
-                            printf("Identical files found, Error\n");
-                            return badcommand();
+                            return badcommandSameFile();
                         }       
                     }
                 }
@@ -105,6 +104,11 @@ int quit(){
 int badcommand(){
     printf("%s\n", "Unknown Command");
     return 1;
+}
+
+int badcommandSameFile(){
+    printf("%s\n","Bad command: same file name");
+    return 2;
 }
 
 // For run command only
