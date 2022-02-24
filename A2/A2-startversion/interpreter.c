@@ -206,7 +206,9 @@ int run(char* filename){
     mem_cleanup(ready_head);
     // 2. remove ready queue (made of pcb node), since there is only one node so we just free it
     free(ready_head);
-    mem_print_dirtymem();
+
+    // print to check if there is any dirty memory
+    // mem_print_dirtymem();
     return errCode;
 }
 
@@ -235,7 +237,7 @@ int fcfspoly(char* filenames[], int filenum){
         free(work_node);
         if(ready_head == NULL) break;
     }
-    mem_print_dirtymem();
+    // mem_print_dirtymem();
     return 0;
 
 }
@@ -326,7 +328,7 @@ int sjfpoly(char* filenames[], int filenum){
         if(ready_head == NULL) break;
     }
 
-    mem_print_dirtymem();
+    // mem_print_dirtymem();
     return 0;
 
 }
@@ -363,7 +365,7 @@ int rrpoly(char* filenames[], int filenum){
         append_pcb_tohead(ready_head,work_node);
     }
 
-    mem_print_dirtymem();
+    // mem_print_dirtymem();
     return 0;
 }
 
@@ -422,17 +424,8 @@ int agingpoly(char* filenames[], int filenum){
         // if find anything to swap, do it
         if(swap_node != NULL){
             append_pcb_tohead(ready_head,pophead_pcb(&ready_head)); 
-            // // if its the next, pop it and append it at the end
-            // if(swap_node == ready_head->next){
-            //     append_pcb_tohead(ready_head,pophead_pcb(&ready_head));
-            // }
-            // // if it is not the next, swap
-            // // TO TRY OUT TEST CASES
-            // else{
-            //     swappcb(swap_node,ready_head);
-            // }
         }
         
     }
-    mem_print_dirtymem();
+    // mem_print_dirtymem();
 }
