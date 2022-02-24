@@ -201,6 +201,12 @@ int rrpoly(char* filenames[], int filenum){
             free(work_node);
             continue;
         }
+
+        // work is not done, but work_node is the only node left, so make it the new head
+        if(ready_head == NULL && work_node != NULL){
+            ready_head = work_node;
+            continue;
+        }
         append_pcb_tohead(ready_head,work_node);
     }
     
