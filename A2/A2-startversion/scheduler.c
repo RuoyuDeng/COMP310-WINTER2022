@@ -135,7 +135,7 @@ int fcfspoly(char* filenames[], int filenum){
     }
     
     free(ptr_head);
-    // mem_print_dirtymem();
+    mem_print_dirtymem();
     return 0;
 
 }
@@ -167,7 +167,7 @@ int sjfpoly(char* filenames[], int filenum){
     }
     
     free(ptr_head);
-    // mem_print_dirtymem();
+    mem_print_dirtymem();
     return 0;
 
 }
@@ -211,7 +211,7 @@ int rrpoly(char* filenames[], int filenum){
     }
     
     free(ptr_head);
-    // mem_print_dirtymem();
+    mem_print_dirtymem();
     return 0;
 }
 
@@ -271,13 +271,18 @@ int agingpoly(char* filenames[], int filenum){
 
         // if find anything to swap, do it
         if(swap_node != NULL){
-            append_pcb_tohead(ready_head,pophead_pcb(&ready_head)); 
+            if(swap_node == ready_head->next){
+                append_pcb_tohead(ready_head,pophead_pcb(&ready_head));
+                continue;
+            }
+            swappcb(swap_node,ready_head);
+            
         }
         
     }
     
     free(ptr_head);
-    // mem_print_dirtymem();
+    mem_print_dirtymem();
 }
 
 

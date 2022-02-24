@@ -191,7 +191,7 @@ int run(char* filename){
     free(ptr_head);
 
     // print to check if there is any dirty memory
-    // mem_print_dirtymem();
+    mem_print_dirtymem();
     return errCode;
 }
 
