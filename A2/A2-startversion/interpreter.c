@@ -421,15 +421,16 @@ int agingpoly(char* filenames[], int filenum){
 
         // if find anything to swap, do it
         if(swap_node != NULL){
-            // if its the next, pop it and append it at the end
-            if(swap_node == ready_head->next){
-                append_pcb_tohead(ready_head,pophead_pcb(&ready_head));
-            }
-            // if it is not the next, swap
-            // TO TRY OUT TEST CASES
-            else{
-                swappcb(swap_node,ready_head);
-            }
+            append_pcb_tohead(ready_head,pophead_pcb(&ready_head)); 
+            // // if its the next, pop it and append it at the end
+            // if(swap_node == ready_head->next){
+            //     append_pcb_tohead(ready_head,pophead_pcb(&ready_head));
+            // }
+            // // if it is not the next, swap
+            // // TO TRY OUT TEST CASES
+            // else{
+            //     swappcb(swap_node,ready_head);
+            // }
         }
         
     }
