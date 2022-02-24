@@ -10,11 +10,11 @@ typedef struct pcb{
     struct pcb *next;
 
 } pcb_node;
+// load the file into memory and create a pcb, if there is a ready queue head
+// append such pcb, otherwise make it ready queue head
 int loadfile(char *filename,pcb_node **ptr_head);
-pcb_node* pophead_pcb(pcb_node **ptr_head);
-// append a NEW pcb that does not exist
-void append_pcb(pcb_node **ptr_head,int spot_index,int line_index,int total_lines,int job_score);
-
-// append an EXISTING pcb
-void append_pcb_tohead(pcb_node *head, pcb_node *append_node);
+int fcfspoly(char* filenames[], int filenum);
+int sjfpoly(char* filenames[], int filenum);
+int rrpoly(char* filenames[], int filenum);
+int agingpoly(char* filenames[], int filenum);
 #endif
