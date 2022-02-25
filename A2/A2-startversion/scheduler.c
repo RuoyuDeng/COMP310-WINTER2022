@@ -135,7 +135,7 @@ int fcfspoly(char* filenames[], int filenum){
     }
     
     free(ptr_head);
-    mem_print_dirtymem();
+    //mem_print_dirtymem();
     return 0;
 
 }
@@ -167,7 +167,7 @@ int sjfpoly(char* filenames[], int filenum){
     }
     
     free(ptr_head);
-    mem_print_dirtymem();
+    //mem_print_dirtymem();
     return 0;
 
 }
@@ -211,7 +211,7 @@ int rrpoly(char* filenames[], int filenum){
     }
     
     free(ptr_head);
-    mem_print_dirtymem();
+    //mem_print_dirtymem();
     return 0;
 }
 
@@ -282,7 +282,7 @@ int agingpoly(char* filenames[], int filenum){
     }
     
     free(ptr_head);
-    mem_print_dirtymem();
+    //mem_print_dirtymem();
 }
 
 
