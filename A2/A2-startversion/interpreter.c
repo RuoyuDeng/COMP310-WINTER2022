@@ -91,7 +91,7 @@ quit			Exits / terminates the shell with “Bye!”\n \
 set VAR STRING		Assigns a value to shell memory\n \
 print VAR		Displays the STRING assigned to VAR\n \
 run SCRIPT.TXT		Executes the file SCRIPT.TXT\n \
-exec prog1 prog2 prog3 POLICY     Executes up to 3 concurrent programs, according to a given scheduling policy ";
+exec prog1 prog2 prog3 POLICY     Executes up to 3 concurrent programs, according to a given scheduling policy";
     printf("%s\n", help_string);
     return 0;
 }
@@ -190,10 +190,9 @@ int run(char* filename){
     // clean up
     // 1. remove all lines of code from shell memory space
     mem_cleanup(ready_head);
-    // 2. remove ready queue (made of pcb node), since there is only one node so we just free it
-
+    free(ready_head);
     free(ptr_head);
-
+    
     // print to check if there is any dirty memory
     mem_print_dirtymem();
     return errCode;

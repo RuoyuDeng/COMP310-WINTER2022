@@ -62,7 +62,9 @@ void changeval(node_t *head, int value){
 }
 int main()
 {   
-    node_t **ptr_head = malloc(8);
+    node_t **ptr_head;
+    printf("%p",ptr_head);
+    *ptr_head = NULL;
     node_t *head;
     createnode(ptr_head,30);
     head = *ptr_head;
