@@ -1,0 +1,138 @@
+==8745== Memcheck, a memory error detector
+==8745== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==8745== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==8745== Command: ./mysh
+==8745== Parent PID: 8826
+==8745== 
+--8745-- 
+--8745-- Valgrind options:
+--8745--    --leak-check=full
+--8745--    --show-leak-kinds=all
+--8745--    --track-origins=yes
+--8745--    --verbose
+--8745--    --log-file=valgrind-out.txt
+--8745-- Contents of /proc/version:
+--8745--   Linux version 4.15.0-124-generic (buildd@lgw01-amd64-029) (gcc version 7.5.0 (Ubuntu 7.5.0-3ubuntu1~18.04)) #127-Ubuntu SMP Fri Nov 6 10:54:43 UTC 2020
+--8745-- 
+--8745-- Arch and hwcaps: AMD64, LittleEndian, amd64-cx16-rdtscp-sse3
+--8745-- Page sizes: currently 4096, max supported 4096
+--8745-- Valgrind library directory: /usr/lib/valgrind
+--8745-- Reading syms from /home/2020/rdeng4/COMP310-WINTER2022/A2/A2-startversion/mysh
+--8745-- Reading syms from /lib/x86_64-linux-gnu/ld-2.27.so
+--8745--   Considering /lib/x86_64-linux-gnu/ld-2.27.so ..
+--8745--   .. CRC mismatch (computed 0ef8daab wanted 65bccefe)
+--8745--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/ld-2.27.so ..
+--8745--   .. CRC is valid
+--8745-- Reading syms from /usr/lib/valgrind/memcheck-amd64-linux
+--8745--   Considering /usr/lib/valgrind/memcheck-amd64-linux ..
+--8745--   .. CRC mismatch (computed 41ddb025 wanted 9972f546)
+--8745--    object doesn't have a symbol table
+--8745--    object doesn't have a dynamic symbol table
+--8745-- Scheduler: using generic scheduler lock implementation.
+--8745-- Reading suppressions file: /usr/lib/valgrind/default.supp
+==8745== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-8745-by-rdeng4-on-???
+==8745== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-8745-by-rdeng4-on-???
+==8745== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-8745-by-rdeng4-on-???
+==8745== 
+==8745== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==8745== don't want to do, unless you know exactly what you're doing,
+==8745== or are doing some strange experiment):
+==8745==   /usr/lib/valgrind/../../bin/vgdb --pid=8745 ...command...
+==8745== 
+==8745== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==8745==   /path/to/gdb ./mysh
+==8745== and then give GDB the following command
+==8745==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=8745
+==8745== --pid is optional if only one valgrind process is running
+==8745== 
+--8745-- REDIR: 0x4020d20 (ld-linux-x86-64.so.2:strlen) redirected to 0x580608c1 (???)
+--8745-- REDIR: 0x4020b00 (ld-linux-x86-64.so.2:index) redirected to 0x580608db (???)
+--8745-- Reading syms from /usr/lib/valgrind/vgpreload_core-amd64-linux.so
+--8745--   Considering /usr/lib/valgrind/vgpreload_core-amd64-linux.so ..
+--8745--   .. CRC mismatch (computed 50df1b30 wanted 4800a4cf)
+--8745--    object doesn't have a symbol table
+--8745-- Reading syms from /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so
+--8745--   Considering /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so ..
+--8745--   .. CRC mismatch (computed f893b962 wanted 95ee359e)
+--8745--    object doesn't have a symbol table
+==8745== WARNING: new redirection conflicts with existing -- ignoring it
+--8745--     old: 0x04020d20 (strlen              ) R-> (0000.0) 0x580608c1 ???
+--8745--     new: 0x04020d20 (strlen              ) R-> (2007.0) 0x04c34db0 strlen
+--8745-- REDIR: 0x401d540 (ld-linux-x86-64.so.2:strcmp) redirected to 0x4c35ee0 (strcmp)
+--8745-- REDIR: 0x4021260 (ld-linux-x86-64.so.2:mempcpy) redirected to 0x4c394f0 (mempcpy)
+--8745-- Reading syms from /lib/x86_64-linux-gnu/libc-2.27.so
+--8745--   Considering /lib/x86_64-linux-gnu/libc-2.27.so ..
+--8745--   .. CRC mismatch (computed cb654923 wanted 8713c55a)
+--8745--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libc-2.27.so ..
+--8745--   .. CRC is valid
+--8745-- REDIR: 0x4edcb70 (libc.so.6:memmove) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edbe80 (libc.so.6:strncpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edce50 (libc.so.6:strcasecmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edb8d0 (libc.so.6:strcat) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edbeb0 (libc.so.6:rindex) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4ede5a0 (libc.so.6:rawmemchr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edcce0 (libc.so.6:mempcpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edcb10 (libc.so.6:bcmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edbe40 (libc.so.6:strncmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edb940 (libc.so.6:strcmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edcc40 (libc.so.6:memset) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4ef9ed0 (libc.so.6:wcschr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edbde0 (libc.so.6:strnlen) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edb9b0 (libc.so.6:strcspn) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edcea0 (libc.so.6:strncasecmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edb980 (libc.so.6:strcpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edcfe0 (libc.so.6:memcpy@@GLIBC_2.14) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edbee0 (libc.so.6:strpbrk) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edb900 (libc.so.6:index) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edbdb0 (libc.so.6:strlen) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4ee64a0 (libc.so.6:memrchr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edcef0 (libc.so.6:strcasecmp_l) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edcae0 (libc.so.6:memchr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4efac90 (libc.so.6:wcslen) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edc190 (libc.so.6:strspn) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edce20 (libc.so.6:stpncpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edcdf0 (libc.so.6:stpcpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4ede5d0 (libc.so.6:strchrnul) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4edcf40 (libc.so.6:strncasecmp_l) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--8745-- REDIR: 0x4eef110 (libc.so.6:__strrchr_sse2) redirected to 0x4c34790 (__strrchr_sse2)
+--8745-- REDIR: 0x4eef400 (libc.so.6:__strlen_sse2) redirected to 0x4c34d30 (__strlen_sse2)
+--8745-- REDIR: 0x4ed5140 (libc.so.6:malloc) redirected to 0x4c31aa0 (malloc)
+--8745-- REDIR: 0x4ef9220 (libc.so.6:__mempcpy_sse2_unaligned) redirected to 0x4c39130 (mempcpy)
+--8745-- REDIR: 0x4edc6c0 (libc.so.6:__GI_strstr) redirected to 0x4c39760 (__strstr_sse2)
+--8745-- REDIR: 0x4eeef00 (libc.so.6:__strchrnul_sse2) redirected to 0x4c39020 (strchrnul)
+--8745-- REDIR: 0x4ed5a30 (libc.so.6:free) redirected to 0x4c32cd0 (free)
+--8745-- REDIR: 0x4eeece0 (libc.so.6:__strchr_sse2) redirected to 0x4c348d0 (__strchr_sse2)
+--8745-- REDIR: 0x4ef9650 (libc.so.6:__memset_sse2_unaligned) redirected to 0x4c385d0 (memset)
+--8745-- REDIR: 0x4ef9240 (libc.so.6:memcpy@GLIBC_2.2.5) redirected to 0x4c36060 (memcpy@GLIBC_2.2.5)
+--8745-- REDIR: 0x4fc7fb0 (libc.so.6:__strcspn_sse42) redirected to 0x4c398d0 (strcspn)
+--8745-- REDIR: 0x4ee7c50 (libc.so.6:__strcmp_sse2_unaligned) redirected to 0x4c35da0 (strcmp)
+--8745-- REDIR: 0x4ee9750 (libc.so.6:__memchr_sse2) redirected to 0x4c35f80 (memchr)
+==8745== 
+==8745== HEAP SUMMARY:
+==8745==     in use at exit: 46 bytes in 21 blocks
+==8745==   total heap usage: 44 allocs, 23 frees, 13,686 bytes allocated
+==8745== 
+==8745== Searching for pointers to 21 not-freed blocks
+==8745== Checked 230,144 bytes
+==8745== 
+==8745== 6 bytes in 1 blocks are still reachable in loss record 1 of 2
+==8745==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8745==    by 0x4EDBAF9: strdup (strdup.c:42)
+==8745==    by 0x108FC0: parseInput (shell.c:96)
+==8745==    by 0x108E70: main (shell.c:60)
+==8745== 
+==8745== 40 bytes in 20 blocks are definitely lost in loss record 2 of 2
+==8745==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8745==    by 0x4EDBAF9: strdup (strdup.c:42)
+==8745==    by 0x108FC0: parseInput (shell.c:96)
+==8745==    by 0x108E70: main (shell.c:60)
+==8745== 
+==8745== LEAK SUMMARY:
+==8745==    definitely lost: 40 bytes in 20 blocks
+==8745==    indirectly lost: 0 bytes in 0 blocks
+==8745==      possibly lost: 0 bytes in 0 blocks
+==8745==    still reachable: 6 bytes in 1 blocks
+==8745==         suppressed: 0 bytes in 0 blocks
+==8745== 
+==8745== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+==8745== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)

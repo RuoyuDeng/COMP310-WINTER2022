@@ -12,11 +12,10 @@ int parseInput(char ui[]);
 
 // Start of everything
 int main(int argc, char *argv[]) {
-
+	
 	printf("%s\n", "Shell version 1.1 Created January 2022");
 	help();
-
-	FILE *tty = fopen("/dev/tty", "r"); // default interact FILE stream to read user inputs
+	FILE *tty; // default interact FILE stream to read user inputs
 	FILE *file_toread;					
 	
 	
@@ -33,7 +32,8 @@ int main(int argc, char *argv[]) {
 	mem_init();
 
 
-	while(1) {							
+	while(1) {			
+		tty = fopen("/dev/tty", "r");				
 		printf("%c ",prompt);
 		// when we have a input file redirected to stdin, change
 		// the default write place
@@ -44,7 +44,6 @@ int main(int argc, char *argv[]) {
 		if (feof(stdin)) file_toread = tty;
 		// by default, read from the interactive input tty
 		fgets(userInput, MAX_USER_INPUT-1, file_toread);
-
 		// split the chained and execute them in a loop IF found a ';'
 		ret = strchr(userInput,';');
 		if(ret!=NULL){
@@ -56,12 +55,14 @@ int main(int argc, char *argv[]) {
 				input_piece = strtok(NULL,";");
 			}
 		}
-
 		errorCode = parseInput(userInput);
+		
 		if (errorCode == -1) exit(99);
 		memset(userInput, 0, sizeof(userInput));
+		
+		
 	}
-
+	
 	return 0;
 
 }
@@ -90,9 +91,7 @@ int parseInput(char ui[]) {
 			tmp[b] = ui[a];						// extract a word
 	 
 		tmp[b] = '\0';
-
 		words[w] = strdup(tmp);
-
 		w++;
 		
 		if(ui[a] == '\0'){
