@@ -12,7 +12,11 @@ int parseInput(char ui[]);
 
 // Start of everything
 int main(int argc, char *argv[]) {
+	//
 
+	char *cpy = malloc(strlen(argv[0]));
+
+	//
 	printf("%s\n", "Shell version 1.1 Created January 2022");
 	help();
 

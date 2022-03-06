@@ -10,13 +10,16 @@
 //     struct node *next;
 // }node_t;
 
-node_t **createnode(node_t**ptr_new,int value){
+void createnode(node_t**ptr_head,int value){
     node_t *new = malloc(sizeof(node_t));
-    new->next = NULL;
-    new->value = value;
-    ptr_new = &new;
-    return ptr_new;
+    if(*ptr_head == NULL){
+        new->next = NULL;
+        new->value = value;
+        *ptr_head = new;
+        return;
+    }
 }
+
 
 void append(node_t *head,int value){
     node_t *cur_node = head;
@@ -58,15 +61,40 @@ void changeval(node_t *head, int value){
     head->value = value;
 }
 int main()
-{
-    // test cross header file includes
-    node_t *head = malloc(sizeof(node_t));
-    head->next = NULL;
-    head->value = 30;
+{   
+    // node_t **ptr_head;
+    // printf("%p",ptr_head);
+    // *ptr_head = NULL;
+    // node_t *head;
+    // createnode(ptr_head,30);
+    // head = *ptr_head;
+    // printf("%d \n", head->value);
+    // // printf("%d \n", tmp_head->value);
+    int **x;
+    int **y = malloc(8);
+    int *a;
+    int *b = malloc(8);
     
-    changeval(head,500);
-    // append(head,40); // append works
-    printf("Current head value is %d \n",head->value);
+    int *c;
+    printf("x has %p \n",x);
+    printf("y has %p \n",y);
+    
+    puts("");
+    // printf("a has %p \n",a);
+    // printf("b has %p \n",b);
+
+}
+
+
+
+    // // test cross header file includes
+    // node_t *head = malloc(sizeof(node_t));
+    // head->next = NULL;
+    // head->value = 30;
+    
+    // changeval(head,500);
+    // // append(head,40); // append works
+    // printf("Current head value is %d \n",head->value);
 
     // pophead_pcb(&head); // pop head works
     // printf("Current head value is %d \n",head->value);
@@ -98,4 +126,3 @@ int main()
     // snprintf(name_buff,sizeof name_buff,"%d",1);
     // strcat(filename,name_buff);
     // printf("%s",filename);
-}
