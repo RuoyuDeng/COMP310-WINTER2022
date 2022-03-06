@@ -1,0 +1,2 @@
+set x 1; print x; set y 20 30; print y
+quit
