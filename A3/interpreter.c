@@ -7,7 +7,7 @@
 #include "shell.h"
 
 int MAX_ARGS_SIZE = 100;
-
+int x = 10;
 int help();
 int quit();
 int badcommand();
