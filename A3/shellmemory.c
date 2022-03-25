@@ -135,93 +135,179 @@ char **mem_get_value(char *var_in) {
 }
 
 // run all the lines from script stored in shell memory space
-void mem_run_lines(pcb_node *head){
-    // int cur_index = start_index;
-    // int cur_index;
-    // int start_index;
+void mem_run_lines(pcb_node *head, int num_lines){
+    
     int errorCode = 0;
     char line[100];
     char *line_piece;
     char *ret, all_lines[2];
     int *page_table = head->page_table;
-    int max_frame_index = (sizeof(head->page_table) / 4)-1;
-    int line_index, new_line_index, frame_index, i;
-    int end_flag = 0;
+    int last_frame_index = page_table[(sizeof(head->page_table) / 4)-1];
+    int line_index, new_line_index, frame_index, i,j, has_nextpage,next_valid_page;
+    int end_flag, total_lines = head->total_lines;
     frame_t *cur_frame = NULL;
     frame_t *next_frame = NULL;
-    while(1){
+    for(j = 0; j < num_lines; j++){
+        end_flag = 0;
         frame_index = head->frame_index;
         line_index = head->line_index;
         cur_frame = frame_store[page_table[frame_index]];
-        // line_index = 0 or 1
-        if(end_flag) break;
-        if((line_index + 1) % 3 != 0) {
-            for(i = line_index; i < line_index+1; i++){
-                // clean up the line buffer to store the command
-                memset(line,0,sizeof(line));
-                if(cur_frame->lines[i] == NULL){
-                    end_flag = 1;
-                    break;
-                }
-                strcpy(line,cur_frame->lines[i]);
-                // check if the line has ; or not
-                ret = strchr(line,';');
-                if(ret != NULL){
-                    line_piece = strtok(line,";");
-                    while(line_piece != NULL){
-                        errorCode = parseInput(line_piece);	// which calls interpreter()
-                        if (errorCode == -1) exit(99);
-                        line_piece = strtok(NULL,";");
-                    }
-                }
-                // if it does not, then execute the line normally
-                parseInput(line);
-                memset(line,0,sizeof(line));
-            }
-            new_line_index = line_index % 3;
-            if(new_line_index == 0){
-                head->frame_index += 1;
-            }
-            head->line_index = new_line_index;
+        has_nextpage = 0;
+        next_valid_page = 0;
+        if(frame_index == last_frame_index) end_flag = 1;
+
+        // line_index = 0,1,2 and we are reading at a NULL line, then we done
+        if(cur_frame->lines[line_index] == NULL){
+            end_flag = 1;
+            break;
         }
 
-        // line_index = 2
-        else{
-            //!!!!!!!!!!!!!!!!!!! Later page fault!!!!!!!!!!!!!!!!!!
-            next_frame = frame_store[page_table[frame_index+1]]; 
-            //!!!!!!!!!!!!!!!!!!! Later page fault!!!!!!!!!!!!!!!!!!
-            all_lines[0] = malloc(1000);
-            all_lines[1] = malloc(1000);
-            if(next_frame->lines[0] == NULL){
-                end_flag = 1;
-                break;
-            }
-            strcpy(all_lines[0],cur_frame->lines[2]);
-            strcpy(all_lines[1],next_frame->lines[0]);
-            for (i = 0; i <= 1; i++){
-                // clean up the line buffer to store the command
-                memset(line,0,sizeof(line));
-                strcpy(line,all_lines[i]);
-                // check if the line has ; or not
-                ret = strchr(line,';');
-                if(ret != NULL){
-                    line_piece = strtok(line,";");
-                    while(line_piece != NULL){
-                        errorCode = parseInput(line_piece);	// which calls interpreter()
-                        if (errorCode == -1) exit(99);
-                        line_piece = strtok(NULL,";");
-                    }
-                }
-                // if it does not, then execute the line normally
-                parseInput(line);
-                memset(line,0,sizeof(line));
-            }
-            head->frame_index += 1;
-            head->line_index = 1;
+        // otherwise....
+        // line_index = 0 or 1
+        if((line_index + 1) % 3 != 0) {
+            has_nextpage = 0;
         }
+
+        // (line_index + 1) % 3 = 0 -> we will be at next page after reading this line
+        else {
+            // case 1: there is next page (might be page fault, but later) -> update frame_index
+            // case 2: there is no next page (only read 1 line) -> do not update frame_index
+            if(frame_index != last_frame_index){
+                //!!!!!!!!!!!!!!!!!!! Later page fault!!!!!!!!!!!!!!!!!!
+                has_nextpage = 1;
+            }
+
+        }
+
+
+        memset(line,0,sizeof(line));
+        strcpy(line,cur_frame->lines[line_index]);
+        // check if the line has ; or not
+        ret = strchr(line,';');
+        if(ret != NULL){
+            line_piece = strtok(line,";");
+            while(line_piece != NULL){
+                errorCode = parseInput(line_piece);	// which calls interpreter()
+                if (errorCode == -1) exit(99);
+                line_piece = strtok(NULL,";");
+            }
+        }
+        // if it does not, then execute the line normally
+        parseInput(line);
+        memset(line,0,sizeof(line));
+        head->line_index += 1;
+        // move to next page, reset line index
+        if(has_nextpage) {
+            head->frame_index += 1;
+            head->line_index = 0;
+        }
+        
     }
+        if(end_flag) head->is_done = 1;
+        return;
+
+        
+        
+
+        // // line_index = 0 or 1
+        // if((line_index + 1) % 3 != 0) {
+        //     for(i = line_index; i <= line_index+1; i++){
+        //         // clean up the line buffer to store the command
+        //         memset(line,0,sizeof(line));
+        //         if(cur_frame->lines[i] == NULL){
+        //             end_flag = 1;
+        //             break;
+        //         }
+        //         strcpy(line,cur_frame->lines[i]);
+        //         // check if the line has ; or not
+        //         ret = strchr(line,';');
+        //         if(ret != NULL){
+        //             line_piece = strtok(line,";");
+        //             while(line_piece != NULL){
+        //                 errorCode = parseInput(line_piece);	// which calls interpreter()
+        //                 if (errorCode == -1) exit(99);
+        //                 line_piece = strtok(NULL,";");
+        //             }
+        //         }
+        //         // if it does not, then execute the line normally
+        //         parseInput(line);
+        //         memset(line,0,sizeof(line));
+        //     }
+        //     new_line_index = i % 3;
+        //     if(new_line_index == 0){
+        //         head->frame_index += 1;
+        //     }
+        //     head->line_index = new_line_index;
+        // }
+
+        // // line_index = 2
+        // // case 1: there is next page (might be page fault, but later)
+        // // case 2: there is no next page (only read 1 line)
+        // // check if frame_index == last_frame_index
+        // else{
+        //     if(frame_index != last_frame_index){
+        //         //!!!!!!!!!!!!!!!!!!! Later page fault!!!!!!!!!!!!!!!!!!
+        //         next_frame = frame_store[page_table[frame_index+1]]; 
+        //         //!!!!!!!!!!!!!!!!!!! Later page fault!!!!!!!!!!!!!!!!!!
+        //         has_nextpage = 1;
+        //     }
+
+        //     // we assume next pages exists for now, and check for NULL lines
+        //     if(!has_nextpage){
+        //         next_valid_page = (cur_frame->lines[2] == NULL); 
+        //     }
+            
+        //     // the last line of current page is NULL, break the loop
+        //     if(next_valid_page) {
+        //         head->is_done = 1;
+        //         break;
+        //     }
+            
+        //     // if the last line of current page is not NULL and has no next page, we done
+        //     if(!next_valid_page && !has_nextpage) end_flag = 1;
+        //     // run the last line in this page
+        //     // clean up the line buffer to store the command
+        //     memset(line,0,sizeof(line));
+        //     strcpy(line,cur_frame->lines[2]);
+        //     // check if the line has ; or not
+        //     ret = strchr(line,';');
+        //     if(ret != NULL){
+        //         line_piece = strtok(line,";");
+        //         while(line_piece != NULL){
+        //             errorCode = parseInput(line_piece);	// which calls interpreter()
+        //             if (errorCode == -1) exit(99);
+        //             line_piece = strtok(NULL,";");
+        //         }
+        //     }
+        //     // if it does not, then execute the line normally
+        //     parseInput(line);
+        //     memset(line,0,sizeof(line));
+
+        //     if(has_nextpage){
+        //         // run first line in next page
+        //         // clean up the line buffer to store the command
+        //         memset(line,0,sizeof(line));
+        //         strcpy(line,next_frame->lines[0]);
+        //         // check if the line has ; or not
+        //         ret = strchr(line,';');
+        //         if(ret != NULL){
+        //             line_piece = strtok(line,";");
+        //             while(line_piece != NULL){
+        //                 errorCode = parseInput(line_piece);	// which calls interpreter()
+        //                 if (errorCode == -1) exit(99);
+        //                 line_piece = strtok(NULL,";");
+        //             }
+        //         }
+        //         // if it does not, then execute the line normally
+        //         parseInput(line);
+        //         memset(line,0,sizeof(line));
+        //     }
+            
+            
+        //     head->frame_index += 1;
+        //     head->line_index = 1;
+        // }
     
-    return;
     
 }
 

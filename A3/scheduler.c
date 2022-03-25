@@ -19,6 +19,7 @@ void append_pcb(pcb_node **ptr_head,int total_lines, int page_table[]){
         cur_node->total_lines = total_lines;
         cur_node->frame_index = 0;
         cur_node->line_index = 0;
+        cur_node->is_done = 0;
 
         cur_node->page_table = malloc(page_tablesize * 4);
         for(i = 0; i < page_tablesize; i++){
@@ -41,6 +42,7 @@ void append_pcb(pcb_node **ptr_head,int total_lines, int page_table[]){
     cur_node->next->total_lines = total_lines;
     cur_node->next->frame_index = 0;
     cur_node->next->line_index = 0;
+    cur_node->next->is_done = 0;
     cur_node->next->page_table = malloc(page_tablesize * 4);
     for(i = 0; i < page_tablesize; i++){
         cur_node->next->page_table[i] = page_table[i];
@@ -162,27 +164,22 @@ int rrpoly(char* filenames[], int filenum){
     while(1){
         if(ready_head == NULL) break;
         work_node = pophead_pcb(&ready_head);
-        
+        mem_run_lines(work_node,2);
+        // current work_node is done, do not add to tail, clean it up
+        if(work_node->is_done == 1) {
+            // mem_cleanup(work_node);
+            free(work_node);
+            continue;
+        }
+
+        // work is not done, but work_node is the only node left, so make it the new head
+        if(ready_head == NULL && work_node != NULL){
+            ready_head = work_node;
+            continue;
+        }
         append_pcb_tohead(ready_head,work_node);
     }
 
-
-    // rest_lines = work_node->total_lines - work_node->line_index;
-    //     if(rest_lines==1) mem_run_lines(work_node,1);
-    //     else mem_run_lines(work_node,2);
-    //     // current work_node is done, do not add to tail, clean it up
-    //     if(work_node->line_index == work_node->total_lines) {
-    //         // mem_cleanup(work_node);
-    //         free(work_node);
-    //         continue;
-    //     }
-
-    //     // work is not done, but work_node is the only node left, so make it the new head
-    //     if(ready_head == NULL && work_node != NULL){
-    //         ready_head = work_node;
-    //         continue;
-    //     }
-    
     free(ptr_head);
     // mem_print_dirtymem();
     return 0;

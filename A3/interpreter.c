@@ -187,11 +187,11 @@ int run(char* filename){
         return badcommandFileDoesNotExist();
     }
     
-    // ALL info stored in ready_head
-    // 1. start index of shell memory
-    // 2. which line we are working on (incremented in mem_run_lines)
-    // 3. max number of iteration 
-    mem_run_lines(ready_head);
+    while(!ready_head->is_done){
+        // mem_run_lines in RR style
+        mem_run_lines(ready_head,3);
+    }
+    
 
     // clean up
     // 1. remove all lines of code from shell memory space

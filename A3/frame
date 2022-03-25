@@ -1,0 +1,17 @@
+pcb:
+
+line_index = 0
+
+frame_index = 0
+
+page_table = [0,1]
+
+total_lines = 6
+
+when read 1 line:
+
+total_lines % 3 == 0    
+    frame_index == last_frame_index
+
+total_lines % 3 != 0
+    check for NULL
