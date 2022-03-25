@@ -111,7 +111,7 @@ int mem_set_frame(char *store_lines[]) {
         if(frame_store[i] == NULL){
             frame_store[i] = malloc(sizeof(frame_t));
             for(j = 0; j < FRAME_SIZE; j++){
-                frame_store[i]->lines[j] = malloc(1000); // each line has maximum 100 chars
+                frame_store[i]->lines[j] = malloc(100); // each line has maximum 100 chars
                 frame_store[i]->lines[j] = store_lines[j];
             }
             return i; // return the frame index where we insert the frame
@@ -154,7 +154,7 @@ void mem_run_lines(pcb_node *head, int num_lines){
         cur_frame = frame_store[page_table[frame_index]];
         has_nextpage = 0;
         next_valid_page = 0;
-        if(frame_index == last_frame_index) end_flag = 1;
+        if(frame_index == last_frame_index && line_index == 2) end_flag = 1;
 
         // line_index = 0,1,2 and we are reading at a NULL line, then we done
         if(cur_frame->lines[line_index] == NULL){
@@ -192,19 +192,24 @@ void mem_run_lines(pcb_node *head, int num_lines){
                 line_piece = strtok(NULL,";");
             }
         }
-        // if it does not, then execute the line normally
-        parseInput(line);
+        else parseInput(line); // if it does not, then execute the line normally
+        
         memset(line,0,sizeof(line));
+        // decide whether to reset the line_index or not for next page
+        if((line_index + 1) % 3 == 0) head->line_index = 0;
         head->line_index += 1;
         // move to next page, reset line index
         if(has_nextpage) {
             head->frame_index += 1;
             head->line_index = 0;
         }
+        if(end_flag){
+            break;
+        }
         
     }
-        if(end_flag) head->is_done = 1;
-        return;
+    if(end_flag) head->is_done = 1;
+    return;
 
         
         

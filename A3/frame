@@ -15,3 +15,13 @@ total_lines % 3 == 0
 
 total_lines % 3 != 0
     check for NULL
+
+
+echo OOOOP3L1OOOO
+echo OOOOP3L2OOOO
+echo OOP2L1OO
+echo OOP2L2OO
+echo OOOOP3L3OOOO
+echo OOP2L3OO
+echo OOP2L4OO
+echo OOP2L5OO
