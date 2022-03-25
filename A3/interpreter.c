@@ -7,7 +7,6 @@
 #include "shell.h"
 
 int MAX_ARGS_SIZE = 100;
-int x = 10;
 int help();
 int quit();
 int badcommand();
@@ -91,7 +90,8 @@ quit			Exits / terminates the shell with “Bye!”\n \
 set VAR STRING		Assigns a value to shell memory\n \
 print VAR		Displays the STRING assigned to VAR\n \
 run SCRIPT.TXT		Executes the file SCRIPT.TXT\n \
-exec prog1 prog2 prog3 POLICY     Executes up to 3 concurrent programs, according to a given scheduling policy";
+exec prog1 prog2 prog3 POLICY     Executes up to 3 concurrent programs, according to a given scheduling policy\n \
+resetmem              Deletes the content of the variable store.";
     printf("%s\n", help_string);
     return 0;
 }
