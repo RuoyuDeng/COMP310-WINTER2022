@@ -13,7 +13,7 @@ typedef struct pcb{
     int total_lines;  // what is the max number of lines
     int frame_index;      // current working frame of program
     int line_index;      // current working line of current working frame
-    int page_table[34];  // all frame indexes which locate where are frames of prog1 are in frame_store
+    int *page_table;  // all frame indexes which locate where are frames of prog1 are in frame_store
     struct pcb *next;
 } pcb_node;
 // load the file into memory and create a pcb, if there is a ready queue head

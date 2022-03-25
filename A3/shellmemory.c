@@ -114,8 +114,9 @@ int mem_set_frame(char *store_lines[]) {
                 frame_store[i]->lines[j] = malloc(1000); // each line has maximum 100 chars
                 frame_store[i]->lines[j] = store_lines[j];
             }
+            return i; // return the frame index where we insert the frame
         }
-        return i; // return the frame index where we insert the frame
+        
     }
     return -1; // all full
 }
@@ -134,64 +135,117 @@ char **mem_get_value(char *var_in) {
 }
 
 // run all the lines from script stored in shell memory space
-void mem_run_lines(pcb_node *head, int num_lines){
+void mem_run_lines(pcb_node *head){
     // int cur_index = start_index;
-    int cur_index;
-    int start_index;
+    // int cur_index;
+    // int start_index;
     int errorCode = 0;
     char line[100];
     char *line_piece;
-    char *ret;
-    if(head->line_index == 0) cur_index = head->spot_index;
-    cur_index = head->spot_index + head->line_index;
-    start_index = cur_index;
-    for(cur_index; cur_index< start_index + num_lines; cur_index++){
-        // clean up the line buffer to store the command
-        memset(line,0,sizeof(line));
-        // fgets(line,100,var_store[cur_index].line);
-        strcpy(line,var_store[cur_index].line);
-        // check if the line has ; or not
-        ret = strchr(line,';');
-        if(ret != NULL){
-            line_piece = strtok(line,";");
-            while(line_piece != NULL){
-                errorCode = parseInput(line_piece);	// which calls interpreter()
-                if (errorCode == -1) exit(99);
-                line_piece = strtok(NULL,";");
+    char *ret, all_lines[2];
+    int *page_table = head->page_table;
+    int max_frame_index = (sizeof(head->page_table) / 4)-1;
+    int line_index, new_line_index, frame_index, i;
+    int end_flag = 0;
+    frame_t *cur_frame = NULL;
+    frame_t *next_frame = NULL;
+    while(1){
+        frame_index = head->frame_index;
+        line_index = head->line_index;
+        cur_frame = frame_store[page_table[frame_index]];
+        // line_index = 0 or 1
+        if(end_flag) break;
+        if((line_index + 1) % 3 != 0) {
+            for(i = line_index; i < line_index+1; i++){
+                // clean up the line buffer to store the command
+                memset(line,0,sizeof(line));
+                if(cur_frame->lines[i] == NULL){
+                    end_flag = 1;
+                    break;
+                }
+                strcpy(line,cur_frame->lines[i]);
+                // check if the line has ; or not
+                ret = strchr(line,';');
+                if(ret != NULL){
+                    line_piece = strtok(line,";");
+                    while(line_piece != NULL){
+                        errorCode = parseInput(line_piece);	// which calls interpreter()
+                        if (errorCode == -1) exit(99);
+                        line_piece = strtok(NULL,";");
+                    }
+                }
+                // if it does not, then execute the line normally
+                parseInput(line);
+                memset(line,0,sizeof(line));
             }
+            new_line_index = line_index % 3;
+            if(new_line_index == 0){
+                head->frame_index += 1;
+            }
+            head->line_index = new_line_index;
         }
 
-        // if it does not, then execute the line normally
-        parseInput(line);
-        // done with the current line, record in PCB that we need to do next line
-        head->line_index++;
-        memset(line,0,sizeof(line));
+        // line_index = 2
+        else{
+            //!!!!!!!!!!!!!!!!!!! Later page fault!!!!!!!!!!!!!!!!!!
+            next_frame = frame_store[page_table[frame_index+1]]; 
+            //!!!!!!!!!!!!!!!!!!! Later page fault!!!!!!!!!!!!!!!!!!
+            all_lines[0] = malloc(1000);
+            all_lines[1] = malloc(1000);
+            if(next_frame->lines[0] == NULL){
+                end_flag = 1;
+                break;
+            }
+            strcpy(all_lines[0],cur_frame->lines[2]);
+            strcpy(all_lines[1],next_frame->lines[0]);
+            for (i = 0; i <= 1; i++){
+                // clean up the line buffer to store the command
+                memset(line,0,sizeof(line));
+                strcpy(line,all_lines[i]);
+                // check if the line has ; or not
+                ret = strchr(line,';');
+                if(ret != NULL){
+                    line_piece = strtok(line,";");
+                    while(line_piece != NULL){
+                        errorCode = parseInput(line_piece);	// which calls interpreter()
+                        if (errorCode == -1) exit(99);
+                        line_piece = strtok(NULL,";");
+                    }
+                }
+                // if it does not, then execute the line normally
+                parseInput(line);
+                memset(line,0,sizeof(line));
+            }
+            head->frame_index += 1;
+            head->line_index = 1;
+        }
     }
+    
     return;
     
 }
 
-// clean up the current SCRIPT (one script at a time)
-void mem_cleanup(pcb_node *head){
-    int cur_index = head->spot_index;
-    int start_index = cur_index;
-    int total_lines = head->total_lines;
+// // clean up the current SCRIPT (one script at a time)
+// void mem_cleanup(pcb_node *head){
+//     int cur_index = head->spot_index;
+//     int start_index = cur_index;
+//     int total_lines = head->total_lines;
 
-    for(cur_index; cur_index < start_index + total_lines; cur_index++){
-        var_store[cur_index].var = "none";
-        memset(var_store[cur_index].line,0,sizeof(var_store[cur_index].line));
-    }
+//     for(cur_index; cur_index < start_index + total_lines; cur_index++){
+//         var_store[cur_index].var = "none";
+//         memset(var_store[cur_index].line,0,sizeof(var_store[cur_index].line));
+//     }
 
-    return;
-}
+//     return;
+// }
 
-void mem_print_dirtymem(){
-    int find_dirty = 0;
-    for(int i = 100; i<1000; i++){
-        if(strcmp(var_store[i].var, "none") != 0){
-            printf("Memory space at: %d,Var: %s, Line: %s,is not cleaned!\n",i,var_store[i].var,var_store[i].line);
-            find_dirty = 1;
-        }       
-    }
-    if(!find_dirty) printf("All codes from scripts are cleaned.\n");
-}
+// void mem_print_dirtymem(){
+//     int find_dirty = 0;
+//     for(int i = 100; i<1000; i++){
+//         if(strcmp(var_store[i].var, "none") != 0){
+//             printf("Memory space at: %d,Var: %s, Line: %s,is not cleaned!\n",i,var_store[i].var,var_store[i].line);
+//             find_dirty = 1;
+//         }       
+//     }
+//     if(!find_dirty) printf("All codes from scripts are cleaned.\n");
+// }

@@ -67,17 +67,17 @@ int interpreter(char* command_args[], int args_size){
         return system("ls -1");
     } else if (strcmp(command_args[0], "exec")==0) {
         if (args_size >= 3 && args_size <= 5) {
-            // check for identical files
-            if(args_size > 3){
-                for(int i = 1; i<args_size-1; i++){
-                    for(int j = i+1; j<args_size-1; j++){
-                        if(strcmp(command_args[i],command_args[j]) == 0){
-                            return badcommandSameFile();
-                        }       
-                    }
-                }
-            }
-            return exec(command_args,args_size);
+            // // check for identical files
+            // if(args_size > 3){
+            //     for(int i = 1; i<args_size-1; i++){
+            //         for(int j = i+1; j<args_size-1; j++){
+            //             if(strcmp(command_args[i],command_args[j]) == 0){
+            //                 return badcommandSameFile();
+            //             }       
+            //         }
+            //     }
+            // }
+            return exec(command_args,args_size); // no need to check for identical files now
         }
         return badcommand();
     } else if (strcmp(command_args[0], "resetmem")==0) {
@@ -191,11 +191,11 @@ int run(char* filename){
     // 1. start index of shell memory
     // 2. which line we are working on (incremented in mem_run_lines)
     // 3. max number of iteration 
-    mem_run_lines(ready_head,ready_head->total_lines);
+    mem_run_lines(ready_head);
 
     // clean up
     // 1. remove all lines of code from shell memory space
-    mem_cleanup(ready_head);
+    // mem_cleanup(ready_head);
     free(ready_head);
     free(ptr_head);
     
@@ -211,15 +211,15 @@ int exec(char* filenames[], int args_size){
     if(strcmp(filenames[args_size-1],"RR") == 0){
         return rrpoly(filenames,args_size-2);
     }
-    else if(strcmp(filenames[args_size-1],"FCFS") == 0){
-        return fcfspoly(filenames,args_size-2);
-    }
-    else if (strcmp(filenames[args_size-1],"SJF") == 0){
-        return sjfpoly(filenames,args_size-2);
-    }
-    else if(strcmp(filenames[args_size-1],"AGING") == 0){
-        return agingpoly(filenames,args_size-2);
-    }
+    // else if(strcmp(filenames[args_size-1],"FCFS") == 0){
+    //     return fcfspoly(filenames,args_size-2);
+    // }
+    // else if (strcmp(filenames[args_size-1],"SJF") == 0){
+    //     return sjfpoly(filenames,args_size-2);
+    // }
+    // else if(strcmp(filenames[args_size-1],"AGING") == 0){
+    //     return agingpoly(filenames,args_size-2);
+    // }
     return badcommand();
 }
 
