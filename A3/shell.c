@@ -20,11 +20,23 @@ int main(int argc, char *argv[]) {
 	FILE *tty; // default interact FILE stream to read user inputs
 	FILE *file_toread;			
 	// check for backing_store folder		
-	DIR* dir = opendir("backing_store");
-	if(dir) system("rm -r backing_store/*");
+	DIR* d = opendir("backing_store");
+	struct dirent *dir;
+	int has_file = 0;
+	if(d) {
+		while ((dir = readdir(d)) != NULL) {
+			// check if there are files named besides ".." and ".", if there is, remove them
+			if (strcmp(dir->d_name,"..") != 0 && strcmp(dir->d_name,".") != 0 ){
+				has_file = 1;
+			}	
+		}
+		closedir(d);
+	}
 	else if (ENOENT == errno) {
 		system("mkdir backing_store");
 	}
+	if(has_file) system("rm backing_store/*"); // remove file in backing_store if there is any
+
 	char prompt = '$';  				// Shell prompt
 	char userInput[MAX_USER_INPUT];		// user's input stored here
 	int errorCode = 0;					// zero means no error, default
@@ -34,8 +46,8 @@ int main(int argc, char *argv[]) {
 	for (int i=0; i<MAX_USER_INPUT; i++)
 		userInput[i] = '\0';
 	
-	//init shell memory
-	mem_init();
+	//init shell memory (var_store)
+	var_store_init();
 
 	
 

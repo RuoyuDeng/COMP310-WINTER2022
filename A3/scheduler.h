@@ -2,13 +2,19 @@
 #define scheduler_H
 
 typedef struct pcb{
+    // each pcb stores info about 1 prog
+    
+    // int spot_index; // which line is the first line
+    // int line_index; // which line to read and execute now
+    
+    // int job_score; // job score for aging
+    
     int pid;
-    int spot_index; // which line is the first line
-    int line_index; // which line to read and execute now
     int total_lines;  // what is the max number of lines
-    int job_score; // job score for aging
+    int frame_index;      // current working frame of program
+    int line_index;      // current working line of current working frame
+    int page_table[34];  // all frame indexes which locate where are frames of prog1 are in frame_store
     struct pcb *next;
-
 } pcb_node;
 // load the file into memory and create a pcb, if there is a ready queue head
 // append such pcb, otherwise make it ready queue head

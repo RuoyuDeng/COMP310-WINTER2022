@@ -61,13 +61,36 @@ pcb_node* pophead_pcb(pcb_node **ptr_head){
 int loadfile(char *filename, pcb_node **ptr_head){
     char line[1000];
     char cpname[20];
-    char *line_piece;
-    char *ret;
-    int lineindex = 0;
+    // char *line_piece;
+    // char *ret;
+    int total_lines = 0;
     int memory_overload;
-    int start_line_index = -2;
-    char file_var_buffer[30];
-    FILE *file = fopen(filename,"rt");  // the program is in a file
+    
+    int frame_index = -2;
+    int page_table[34];
+    int frame_count = 0;
+    int linecount = 0;
+    char *lines_tostore[3];
+    
+    char back_filename[50];
+    char cmd[100];
+    char cp[] = "cp ";
+    char back_path[] = "backing_store/";
+
+    // form the new file name
+    memset(back_filename,0,50);
+    strcat(back_filename,back_path);
+    strcat(back_filename,filename);
+
+    // form the cp command
+    memset(cmd,0,100);
+    strcat(cmd,cp);
+    strcat(cmd,filename);
+    strcat(cmd," ");
+    strcat(cmd,back_filename);
+    system(cmd);
+
+    FILE *file = fopen(back_filename,"rt");  // the program is in a file
 
     // file does not exist
     if(file == NULL){
@@ -78,33 +101,44 @@ int loadfile(char *filename, pcb_node **ptr_head){
     memset(line,0,sizeof(line));
 
     // load all lines of code into memory space (set_file)
-    while(fgets(line, sizeof(line), file) != NULL){
-        // make a copy of existing filename
-        strcpy(cpname,filename);
+    while(fgets(line, sizeof(line), file) != NULL && linecount != 3){
+        // // make a copy of existing filename
+        // strcpy(cpname,filename);
 
-        // make sure the variable name is correct
-        memset(file_var_buffer,0,sizeof(file_var_buffer));
+        // // make sure the variable name is correct
+        // memset(file_var_buffer,0,sizeof(file_var_buffer));
 
-        // add the line of index to the end of file name and set it into shell memory
-        snprintf(file_var_buffer,sizeof file_var_buffer,"%d",lineindex);
-        strcat(cpname,file_var_buffer);
+        // // add the line of index to the end of file name and set it into shell memory
+        // snprintf(file_var_buffer,sizeof file_var_buffer,"%d",total_lines);
+        // strcat(cpname,file_var_buffer);
 
-        // find the first valid index to insert the first line of the whole script
-        if(start_line_index == -2)
-            start_line_index = mem_set_lines(cpname,line);
-        else if (start_line_index == -1){
-            printf("No more space to insert variable! \n");
-            return -1;
-        } 
-        else {
-            // too many lines of codes
-            if(mem_set_lines(cpname,line) == -1) return -1;
+
+        lines_tostore[linecount] = line;
+        linecount++;
+        total_lines++;
+
+        // only call mem_set_frame when we have linecount == 3
+        if(linecount == 3){
+                // find the first valid index to insert the first line of the whole script
+            if(frame_index == -2)
+                frame_index = mem_set_frame(lines_tostore);
+            else if (frame_index == -1){
+                printf("No more space to insert variable! \n");
+                return -1;
+            } 
+            else {
+                // too many lines of codes
+                if(mem_set_frame(lines_tostore) == -1) return -1;
+            }
+            page_table[frame_count] = frame_index;
+            frame_count ++;
+            memset(lines_tostore,0,sizeof(lines_tostore));
         }
-        lineindex++;
+        
     }
 
     fclose(file);
-    append_pcb(ptr_head,start_line_index,0,lineindex,lineindex);
+    append_pcb(ptr_head,frame_index,0,total_lines,total_lines);
     return 0;
 }
 

@@ -80,7 +80,12 @@ int interpreter(char* command_args[], int args_size){
             return exec(command_args,args_size);
         }
         return badcommand();
-    } else return badcommand();
+    } else if (strcmp(command_args[0], "resetmem")==0) {
+        if (args_size != 1) return badcommand();
+        return var_store_init();
+    }
+    
+    else return badcommand();
 }
 
 int help(){
