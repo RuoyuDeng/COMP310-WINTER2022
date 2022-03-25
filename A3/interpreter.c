@@ -41,6 +41,7 @@ int interpreter(char* command_args[], int args_size){
     } else if (strcmp(command_args[0], "quit")==0) {
         //quit
         if (args_size != 1) return badcommand();
+        system("rm -r backing_store");
         return quit();
 
     } else if (strcmp(command_args[0], "set")==0) {
@@ -201,14 +202,15 @@ int run(char* filename){
 int exec(char* filenames[], int args_size){
     // exec prog1 prog2 prog3 FCFS (command_args)
     // all polies (1. the address of first file, 2. total number of files to read)
-    if(strcmp(filenames[args_size-1],"FCFS") == 0){
+
+    if(strcmp(filenames[args_size-1],"RR") == 0){
+        return rrpoly(filenames,args_size-2);
+    }
+    else if(strcmp(filenames[args_size-1],"FCFS") == 0){
         return fcfspoly(filenames,args_size-2);
     }
     else if (strcmp(filenames[args_size-1],"SJF") == 0){
         return sjfpoly(filenames,args_size-2);
-    }
-    else if(strcmp(filenames[args_size-1],"RR") == 0){
-        return rrpoly(filenames,args_size-2);
     }
     else if(strcmp(filenames[args_size-1],"AGING") == 0){
         return agingpoly(filenames,args_size-2);

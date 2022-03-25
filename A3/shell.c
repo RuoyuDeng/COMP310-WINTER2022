@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
+#include <dirent.h>
+#include <errno.h>
 
 #include "interpreter.h"
 #include "shellmemory.h"
@@ -16,9 +18,13 @@ int main(int argc, char *argv[]) {
 	printf("%s\n", "Shell version 1.1 Created January 2022");
 	help();
 	FILE *tty; // default interact FILE stream to read user inputs
-	FILE *file_toread;					
-	
-	
+	FILE *file_toread;			
+	// check for backing_store folder		
+	DIR* dir = opendir("backing_store");
+	if(dir) system("rm -r backing_store/*");
+	else if (ENOENT == errno) {
+		system("mkdir backing_store");
+	}
 	char prompt = '$';  				// Shell prompt
 	char userInput[MAX_USER_INPUT];		// user's input stored here
 	int errorCode = 0;					// zero means no error, default
@@ -30,6 +36,8 @@ int main(int argc, char *argv[]) {
 	
 	//init shell memory
 	mem_init();
+
+	
 
 
 	while(1) {			
