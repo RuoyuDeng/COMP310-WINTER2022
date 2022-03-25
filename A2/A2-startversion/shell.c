@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
 	mem_init();
 
 
-	while(1) {			
+	while(1) {
 		tty = fopen("/dev/tty", "r");				
 		printf("%c ",prompt);
 		// when we have a input file redirected to stdin, change

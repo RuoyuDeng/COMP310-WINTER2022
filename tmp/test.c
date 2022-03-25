@@ -4,7 +4,6 @@
 
 #include "pcb.h"
 #include "run.h"
-
 // typedef struct node{
 //     int value;
 //     struct node *next;
@@ -62,26 +61,8 @@ void changeval(node_t *head, int value){
 }
 int main()
 {   
-    // node_t **ptr_head;
-    // printf("%p",ptr_head);
-    // *ptr_head = NULL;
-    // node_t *head;
-    // createnode(ptr_head,30);
-    // head = *ptr_head;
-    // printf("%d \n", head->value);
-    // // printf("%d \n", tmp_head->value);
-    int **x;
-    int **y = malloc(8);
-    int *a;
-    int *b = malloc(8);
-    
-    int *c;
-    printf("x has %p \n",x);
-    printf("y has %p \n",y);
-    
-    puts("");
-    // printf("a has %p \n",a);
-    // printf("b has %p \n",b);
+    // system("mkdir 123");
+    system("rm -r 123");
 
 }
 
