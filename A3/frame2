@@ -90,6 +90,8 @@ mem_run_lines(pcb_2,2)
     pcb1_page_table = [2,3] -> [2,3]
     pcb2_page_table = [0,1] -> [0,1,2]
     FRAMES[2]
+    load page into frame_store[X]
+    update cur_pcb->is_last_frame = 0
     ----------->
     return;
 
@@ -97,9 +99,70 @@ mem_run_lines(pcb_2,2)
 
 
 -> if if pcb_2->is_last_frame == 0: No page fault
+    -> run 2 lines of code
 
 
 2) HAS REMAINING LINES TO DO
+
+
+
+echo OOP2L1OO
+echo OOP2L2OO
+
+echo OOP1L1OO
+echo OOP1L2OO
+
+echo OOP2L3OO
+echo OOP2L4OO
+
+echo OOP1L3OO
+echo OOP1L4OO
+
+echo OOP2L5OO
+echo OOP2L6OO
+
+echo OOP1L5OO
+echo OOP1L6OO
+
+-> first page fault (before knowing anything about next page to run)
+echo OOP2L7OO 
+echo OOP2L8OO 
+
+echo OOP1L7OO
+echo OOP1L8OO
+
+echo OOP2L9OO  
+-> second page fault (already ran a line, then page fault) 
+echo OOP2L1OOO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

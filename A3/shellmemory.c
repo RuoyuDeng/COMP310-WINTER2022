@@ -139,72 +139,147 @@ char **mem_get_value(char *var_in) {
 // if page fault happens, call 
 // page_fault_handler() -> do its job
 void mem_run_lines(pcb_node *head, int num_lines){
-    int errorCode = 0, has_freespot = 0, *bitmap[MAX_FRAMESIZE];
+    int errorCode = 0, free_spots[MAX_FRAMESIZE],free_spot_index=-1;
+    int taken_spots[MAX_FRAMESIZE], num_taken_spots = 0;
     char line[100];
     char *line_piece;
     char *ret, all_lines[2];
     int *page_table = head->page_table;
-    int last_frame_index = page_table[(sizeof(head->page_table) / 4)-1];
-    int line_index, new_line_index, frame_index, i,j, has_nextpage,next_valid_page;
-    int end_flag, total_lines = head->total_lines;
+    int line_index, new_line_index, frame_index, i,j, last_frame_index,next_valid_page;
+    int end_flag, total_lines = head->total_lines, evict_index = -1, insert_index;
     frame_t *cur_frame = NULL;
     frame_t *next_frame = NULL;
+    FILE *file = NULL;
 
-    for(int k = 0; k < MAX_FRAMESIZE)
+    // traverse backwards to find the last_frame_index that is in memory
+    for(int k = 33; k > -1; k--){
+        if(page_table[k] != -1) 
+            last_frame_index = k;
 
-    // check for fres spot
+    }
+    // initializa free spot array & taken_spots array
+    for(int k = 0; k < MAX_FRAMESIZE; k++) {
+        free_spots[i] = -1;
+        taken_spots[i] = -1;
+    }
+    
+    // knows where we can insert a frame ex) free_spots = [1,3,5]
+    // -> frame 1 frame 3 frame 5 are free
+    i = 0;
+    j = 0;
+    for(int k = 0; k < MAX_FRAMESIZE; k++){
+        if(frame_store[k] == NULL) {
+            free_spots[i] = k;
+            i++;
+        } else {
+            taken_spots[j] = k;
+            num_taken_spots += 1;
+            j++;
+        }
+    }
+    
+    if(free_spots[0] != -1) {
+        free_spot_index = free_spots[0];   
+    }
+    // if the first index in free_spots array is -1, then we have no free spots, so need to have evict_index 
+    else evict_index = rand() % num_taken_spots;
+
+
     // run num_lines of lines
     // NOW line index references to which index of line we are working on in whole file
-
-    // if we are not at the last frame that in MEMORY, then we are not having page fault
-    if(!head->is_lastframe){
-
-    }
-
-    else{
-
-    }
-    // else, page fault
-
-
-
 
     for(j = 0; j < num_lines; j++){
         end_flag = 0;
         frame_index = head->frame_index;
         line_index = head->line_index;
-        // if a page fault during run, we can not find frame_store[page_table[frame_index]] == NULL
-        cur_frame = frame_store[page_table[frame_index]];
-        has_nextpage = 0;
-        next_valid_page = 0;
-        if(frame_index == last_frame_index && line_index == 2) end_flag = 1;
+        // if we are at the last frame that in MEMORY, then we are having page fault
+        if(head->is_lastframe){
+            // frame is full, evict one page
+            if(evict_index != -1){
+                // print the evicited page if frame is full
+                printf("Page fault! Victim page contents: \n");
+                printf("<the contents of the page, line by line> \n");
+                for(i = 0; i < 2; i++){
+                    printf("%s \n",frame_store[evict_index]->lines[i]);
+                }
+                printf("End of victim page contents.\n");
 
-        // line_index = 0,1,2 and we are reading at a NULL line, then we done
-        if(cur_frame->lines[line_index] == NULL){
+                frame_store[evict_index] = NULL;
+                insert_index = evict_index;
+            }
+
+            else{
+                // frame is not full, read the lines from file (continously) to form 1 page
+                file = fopen(head->filename,"rt");
+                // ex) line_index = 4, then skip 5 lines
+                i = 0;
+                memset(line,0,sizeof(line));
+                while(i < line_index){
+                    fgets(line, sizeof(line), file);
+                    i++;
+                }
+
+                
+                for(i = 0; i < MAX_FRAMESIZE; i++){
+                    if(frame_store[i] == NULL){
+                        insert_index = i;
+                        break;
+                    }
+                }
+            }
+
+            // write to the target insert frame  && frame_store[insert_index] is NULL (precondition)
+            frame_store[insert_index] = malloc(sizeof(frame_t));
+            i = 0;
+            while(fgets(line, sizeof(line), file) != NULL && i < 3){
+                frame_store[insert_index]->lines[i] = line;
+                i++;
+            }
+            
+            i = 0;
+            while(page_table[i] != -1) i++;
+            head->page_table[i] = insert_index;
+            fclose(file);
+            break;
+        }
+
+        // else, NO page fault
+        cur_frame = frame_store[page_table[frame_index]];
+        next_valid_page = 0;
+
+        // Done cond 1: last line of script
+        if(line_index == (head->total_lines-1)) end_flag = 1;
+
+        // Done cond 2: read a NULL in page in memory
+        // check which line we at -> line_index = 5 % 3 = 2, 6 % 3 = 0, 7 % 3 = 1, 8 % 3 = 2 
+        // NOTE: line_index starts at 0
+        // line_index can be any index of the line, %3 to get the relative line index for each frame
+        new_line_index = line_index % 3;
+        if(cur_frame->lines[new_line_index] == NULL){
             end_flag = 1;
             break;
         }
 
-        // otherwise....
-        // line_index = 0 or 1
-        if((line_index + 1) % 3 != 0) {
-            has_nextpage = 0;
-        }
+        // // otherwise....
+        // // new_line_index = 0 or 1
+        // if(new_line_index != 2) {
+        //     has_nextpage = 0;
+        // }
 
-        // (line_index + 1) % 3 = 0 -> we will be at next page after reading this line
-        else {
-            // case 1: there is next page (might be page fault, but later) -> update frame_index
-            // case 2: there is no next page (only read 1 line) -> do not update frame_index
-            if(frame_index != last_frame_index){
-                //!!!!!!!!!!!!!!!!!!! Later page fault!!!!!!!!!!!!!!!!!!
-                has_nextpage = 1;
-            }
+        // // new_line_index = 2 -> we will be at next page after reading this line
+        // else {
+        //     // case 1: there is next page (might be page fault, but later) -> update frame_index
+        //     // case 2: there is no next page (only read 1 line) -> do not update frame_index
+        //     // if(frame_index != last_frame_index){
+        //     //     //!!!!!!!!!!!!!!!!!!! Later page fault!!!!!!!!!!!!!!!!!!
+                
+        //     // }
+        //     has_nextpage = 1;
+        // }
 
-        }
-
-
+        // run a command
         memset(line,0,sizeof(line));
-        strcpy(line,cur_frame->lines[line_index]);
+        strcpy(line,cur_frame->lines[new_line_index]);
         // check if the line has ; or not
         ret = strchr(line,';');
         if(ret != NULL){
@@ -217,21 +292,23 @@ void mem_run_lines(pcb_node *head, int num_lines){
         }
         else parseInput(line); // if it does not, then execute the line normally
         
+        // at last line of last frame && there might be more lines coming up, which can cause page fault
+        if(frame_index == last_frame_index && new_line_index == 2){
+            head->is_lastframe = 1;
+        }
         memset(line,0,sizeof(line));
-        // decide whether to reset the line_index or not for next page
-        if((line_index + 1) % 3 == 0) head->line_index = 0;
+
         head->line_index += 1;
-        // move to next page, reset line index
-        if(has_nextpage) {
+        // move to next page in page table by increment the frame_index by 1
+        if(new_line_index == 2) {
             head->frame_index += 1;
-            head->line_index = 0;
         }
         if(end_flag){
             break;
         }
-        
     }
     if(end_flag) head->is_done = 1;
+    
     return;
 
         

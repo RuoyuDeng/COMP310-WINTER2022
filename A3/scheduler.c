@@ -9,7 +9,7 @@
 int global_pid = 2000;
 
 // FOR ALL STRATEGIES: add to tail
-void append_pcb(pcb_node **ptr_head,int total_lines, int *page_table){
+void append_pcb(pcb_node **ptr_head,int total_lines, int *page_table, char *filename){
     pcb_node *cur_node = *ptr_head;
     int i;
 
@@ -21,7 +21,8 @@ void append_pcb(pcb_node **ptr_head,int total_lines, int *page_table){
         cur_node->line_index = 0;
         cur_node->is_done = 0;
         cur_node->is_lastframe = 0;
-
+        cur_node->filename = malloc(50);
+        strcpy(cur_node->filename,filename);
         cur_node->page_table = malloc(34 * 4);
         i = 0;
         while(page_table[i] != -1){
@@ -46,6 +47,8 @@ void append_pcb(pcb_node **ptr_head,int total_lines, int *page_table){
     cur_node->next->line_index = 0;
     cur_node->next->is_done = 0;
     cur_node->next->is_lastframe = 0;
+    cur_node->next->filename = malloc(50);
+    strcpy(cur_node->next->filename,filename);
     cur_node->next->page_table = malloc(34 * 4);
     i = 0;
     while(page_table[i] != -1){
@@ -77,7 +80,7 @@ int loadfile(char *filename, pcb_node **ptr_head){
     int total_lines = 0;
     int frame_index = -2;
     int frame_count = 0;
-    int linecount = 0;
+    int linecount = 0, i;
     char *lines_tostore[3];
     char back_filename[50];
     char cmd[100];
@@ -102,14 +105,18 @@ int loadfile(char *filename, pcb_node **ptr_head){
     system(cmd);
 
     FILE *file = fopen(back_filename,"rt");  // the program is in a file
-
     // file does not exist
     if(file == NULL){
 		// printf("%s\n", "Bad command: File not found");
         return 3;
 	}
+    // while(fgets(line, sizeof(line), file) != NULL){
+    //     total_lines++; // get the total lines of the script
+    // }
+    // fclose();
+    
     // needs to know how many lines we need to skip to load the correct frame of lines of code
-
+    // file = fopen(back_filename,"rt");
 
 
     // get all lines of code
@@ -117,15 +124,14 @@ int loadfile(char *filename, pcb_node **ptr_head){
     memset(lines_tostore,0,sizeof(lines_tostore));
     memset(page_table,0,34);
     // load all lines of code into memory space (set_file)
-    while(fgets(line, sizeof(line), file) != NULL){
+    i = 0;
+    while(fgets(line, sizeof(line), file) != NULL || i < 6){
         lines_tostore[linecount] = strdup(line);
         linecount++;
         total_lines++;
-
         // only call mem_set_frame when we have linecount == 3
         if(linecount == 3){
             // find the first valid index to insert the first line of the whole script
-            
             frame_index = mem_set_frame(lines_tostore);
             if (frame_index == -1){
                 printf("No more space to insert frame! \n");
@@ -151,7 +157,7 @@ int loadfile(char *filename, pcb_node **ptr_head){
 
     
     fclose(file);
-    append_pcb(ptr_head,total_lines,page_table);
+    append_pcb(ptr_head,total_lines,page_table,back_filename);
     return 0;
 }
 
