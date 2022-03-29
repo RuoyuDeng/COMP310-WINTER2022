@@ -1,0 +1,157 @@
+FRAMES:
+
+0
+echo OOP2L1OO
+echo OOP2L2OO
+echo OOP2L3OO
+1
+echo OOP2L4OO
+echo OOP2L5OO
+echo OOP2L6OO
+2
+echo OOP1L1OO -> NULL -> echo OOP2L7OO
+echo OOP1L2OO -> NULL -> echo OOP2L8OO
+echo OOP1L3OO -> NULL -> echo OOP2L9OO
+3
+echo OOP1L4OO
+echo OOP1L5OO
+echo OOP1L6OO
+
+after finishing these 2 pages
+of each script....
+
+echo OOP2L7OO
+echo OOP2L8OO
+echo OOP2L9OO -> page fault!
+
+bitmap_frame
+= [0,1,0,1,1]
+-> generates a random index to evict
+
+EX)
+
+echo OOP2L5OO
+echo OOP2L6OO 
+in 
+echo OOP2L4OO
+echo OOP2L5OO
+echo OOP2L6OO 
+then at the end of mem_run_lines, we have
+
+mem_run_lines(pcb_2,2)
+    -> pcb_2->frame_index = 1
+    -> pcb_2->is_last_frame = 1 
+    // set to 1 if after mem_run_lines, frame_index == last_frame_index
+    // where last_frame_index = the last non -1 value in cur page_table
+
+1) NO REMAINING LINES TO DO
+mem_run_lines(pcb_2,2)
+-> if pcb_2->is_last_frame == 1: then we have PAGE FAULT
+
+    traverse bitmap_frame to set up avaiable_bitmap
+    j = 0
+    for i:
+        if bitmap_frame[i] == 1:
+            avaiable_bitmap[j] = i
+            j++
+
+    -> randomly generate a index on 
+    -> avaiable_bitmap[random_index] to get a spot where we can evict
+    -> avaiable_bitmap[random_index] = X
+    X = 2 in this case
+    evict FRAMES[2] //knows which frame in frame_store
+
+    ”Page fault! Victim page contents:”
+    <the contents of the page, line by line>
+    echo OOP1L1OO
+    echo OOP1L2OO
+    echo OOP1L3OO
+    ”End of victim page contents.”
+    -> free(FRAMES[2])
+    -> FRAMES[2] = NULL
+    # -> int k
+    # -> for k 
+    #     if cur_pcb->page_table[k] == X (2 in this case)
+    #     cur_pcb->page_table[k] = -1
+    #     break;
+
+    -> call page_fault_handler
+
+    ---------> 
+
+
+    // in shellmemory.c 
+    // 
+    page_fault_handler(pcb_t * cur_pcb, int X(index to add frame))
+    -> 
+
+    // find the last frame in page_table -> last non neg 1 value
+
+    pcb1_page_table = [2,3] -> [2,3]
+    pcb2_page_table = [0,1] -> [0,1,2]
+    FRAMES[2]
+    ----------->
+    return;
+
+
+
+
+-> if if pcb_2->is_last_frame == 0: No page fault
+
+
+2) HAS REMAINING LINES TO DO
+
+
+
+echo OOP2L1OO
+echo OOP2L2OO
+
+echo OOP1L1OO
+echo OOP1L2OO
+
+echo OOP2L3OO
+echo OOP2L4OO
+
+echo OOP1L3OO
+echo OOP1L4OO
+
+echo OOP2L5OO
+echo OOP2L6OO
+
+echo OOP1L5OO
+echo OOP1L6OO
+
+echo OOP2L7OO 
+echo OOP2L8OO -> page fault 
+
+line: 1 2 3 4 5 6 7
+page_table[] -> how many pages in mem -> [2,3] -> 2 pages
+- total = 7
+- cur_line index = 6
+
+-> knows when a PCB is really over
+
+
+
+
+
+
+
+pre-condition: every program MUST have 2 pages or 1 (if program small)
+
+to run into page fault we must read UNREAD LINES
+but each program has their first 6 UNREAD LINES
+
+some program reaches 7TH unread line BEFORE some program to finish
+their 6th (5th, 4th 3rd....) which is impossible
+
+-> 5 program 4
+
+prog1: 1 2
+prog2: 1 2
+prog3: 1 2
+..........
+
+prog1: 4 not done? NOT POSSIBLE
+prog2: 4 
+prog3: 5 

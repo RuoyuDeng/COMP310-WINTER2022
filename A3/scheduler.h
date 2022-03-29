@@ -15,6 +15,7 @@ typedef struct pcb{
     int line_index;      // current working line of current working frame
     int *page_table;  // all frame indexes which locate where are frames of prog1 are in frame_store
     int is_done;
+    int is_lastframe;
     struct pcb *next;
 } pcb_node;
 // load the file into memory and create a pcb, if there is a ready queue head

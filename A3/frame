@@ -17,11 +17,101 @@ total_lines % 3 != 0
     check for NULL
 
 
-echo OOOOP3L1OOOO
-echo OOOOP3L2OOOO
+
 echo OOP2L1OO
 echo OOP2L2OO
-echo OOOOP3L3OOOO
+
+total = 2
+no next page 
+
+
+//1 load initial pcbs (#files == #pcbs)
+//2 PAGE FAULT (# can not find frame in frame_store during mem_run_lines)
+
+echo OOP2L1OO
+echo OOP2L2OO
 echo OOP2L3OO
+
+echo OOP2L4OO
+total = 4
+no next page
+frame_index == page_table[last_frame_index]
+-> no next page condition, end loop
+
+
+echo OOP2L1OO
+echo OOP2L2OO
+echo OOP2L3OO
+
 echo OOP2L4OO
 echo OOP2L5OO
+echo OOP2L6OO
+total = 6
+
+maybe next page
+reach max lines of code (2 pages)
+
+echo OOP2L7OO
+echo OOP2L8OO
+echo OOP2L9OO
+
+
+echo OOP1L1OO
+echo OOP2L2OO
+echo OOP2L3OO
+
+echo OOP2L4OO
+
+
+
+i = 0;
+while(page_table[i] != frame_index){
+    i++;
+}
+which_frame = i;
+lines_toskip = i * 3;
+
+while(lines_toskip != 0){
+    read a line;
+}
+
+line -> 7th line
+
+
+
+
+prog2
+echo OOP2L1OO
+echo OOP2L2OO
+echo OOP2L3OO
+
+echo OOP2L4OO
+echo OOP2L5OO
+echo OOP2L6OO 
+
+echo OOP2L7OO 
+echo OOP2L8OO
+echo OOP2L9OO
+
+echo OOP2L1OOO
+
+-------------------------------------
+prog1
+echo OOP1L1OO
+echo OOP1L2OO
+echo OOP1L3OO
+
+echo OOP1L4OO
+echo OOP1L5OO
+echo OOP1L6OO
+
+echo OOP1L7OO
+echo OOP1L8OO
+
+
+
+
+
+
+rr(2)
+fraemesize = 12

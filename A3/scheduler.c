@@ -9,9 +9,9 @@
 int global_pid = 2000;
 
 // FOR ALL STRATEGIES: add to tail
-void append_pcb(pcb_node **ptr_head,int total_lines, int page_table[]){
+void append_pcb(pcb_node **ptr_head,int total_lines, int *page_table){
     pcb_node *cur_node = *ptr_head;
-    int page_tablesize = sizeof(page_table) / 4, i;
+    int i;
 
     if(cur_node == NULL){
         cur_node = malloc(sizeof(pcb_node));
@@ -20,9 +20,11 @@ void append_pcb(pcb_node **ptr_head,int total_lines, int page_table[]){
         cur_node->frame_index = 0;
         cur_node->line_index = 0;
         cur_node->is_done = 0;
+        cur_node->is_lastframe = 0;
 
-        cur_node->page_table = malloc(page_tablesize * 4);
-        for(i = 0; i < page_tablesize; i++){
+        cur_node->page_table = malloc(34 * 4);
+        i = 0;
+        while(page_table[i] != -1){
             cur_node->page_table[i] = page_table[i];
         }
 
@@ -43,8 +45,10 @@ void append_pcb(pcb_node **ptr_head,int total_lines, int page_table[]){
     cur_node->next->frame_index = 0;
     cur_node->next->line_index = 0;
     cur_node->next->is_done = 0;
-    cur_node->next->page_table = malloc(page_tablesize * 4);
-    for(i = 0; i < page_tablesize; i++){
+    cur_node->next->is_lastframe = 0;
+    cur_node->next->page_table = malloc(34 * 4);
+    i = 0;
+    while(page_table[i] != -1){
         cur_node->next->page_table[i] = page_table[i];
     }
     cur_node->next->next = NULL;
@@ -72,7 +76,6 @@ int loadfile(char *filename, pcb_node **ptr_head){
     char line[1000];
     int total_lines = 0;
     int frame_index = -2;
-    int page_table[34];
     int frame_count = 0;
     int linecount = 0;
     char *lines_tostore[3];
@@ -80,6 +83,10 @@ int loadfile(char *filename, pcb_node **ptr_head){
     char cmd[100];
     char cp[] = "cp ";
     char back_path[] = "backing_store/";
+    int *page_table = malloc(34 * 4);
+    for(int i = 0; i < 34; i++){
+        page_table[i] = -1;
+    }
 
     // form the new file name
     memset(back_filename,0,50);
@@ -101,6 +108,10 @@ int loadfile(char *filename, pcb_node **ptr_head){
 		// printf("%s\n", "Bad command: File not found");
         return 3;
 	}
+    // needs to know how many lines we need to skip to load the correct frame of lines of code
+
+
+
     // get all lines of code
     memset(line,0,sizeof(line));
     memset(lines_tostore,0,sizeof(lines_tostore));

@@ -8,8 +8,8 @@
 #define MAX_TOKEN_SIZE 6
 #define MAX_LINE_SIZE 100
 #define FRAME_SIZE 3
-int max_framestore = 240;
-int max_varstore = 200;
+#define MAX_FRAMESIZE FRAMESIZE
+#define MAX_VARMEMSIZE VARMEMSIZE
 
 typedef struct memory_struct{
     char *var;
@@ -21,8 +21,8 @@ typedef struct memory_frame{
     char *lines[FRAME_SIZE];
 } frame_t;
 
-memvar_t var_store[240];
-frame_t *frame_store[200];
+memvar_t var_store[MAX_VARMEMSIZE];
+frame_t *frame_store[MAX_FRAMESIZE];
 
 // Helper functions
 int match(char *model, char *var) {
@@ -52,7 +52,7 @@ char *extract(char *model) {
 // reset var_store
 int var_store_init(){
     int i,j;
-    for (i = 0; i < max_varstore; i++){
+    for (i = 0; i < MAX_VARMEMSIZE; i++){
         var_store[i].var = "none";
         for(j = 0; j < MAX_TOKEN_SIZE; j++){
             var_store[i].value[j] = NULL;
@@ -64,7 +64,7 @@ int var_store_init(){
 // // reset frame store
 // void frame_store_init(){
 //     int i;
-//     for (i = 0; i < max_framestore; i++){
+//     for (i = 0; i < MAX_FRAMESIZE; i++){
 //         frame_store[i] = NULL;
 //     }
 // }
@@ -77,7 +77,7 @@ int var_store_init(){
 int mem_set_value(char *var, char **value) {
     
     int i, j;
-    for (i=0; i<max_varstore; i++){
+    for (i=0; i<MAX_VARMEMSIZE; i++){
         if (strcmp(var_store[i].var, var) == 0){
             for (j = 0; value[j] != NULL; j++) {
                 var_store[i].value[j] = strdup(value[j]);
@@ -88,7 +88,7 @@ int mem_set_value(char *var, char **value) {
     }
 
     //Value does not exist, need to find a free spot.
-    for (i=0; i<max_varstore; i++){
+    for (i=0; i<MAX_VARMEMSIZE; i++){
         if (strcmp(var_store[i].var, "none") == 0){
             var_store[i].var = strdup(var);
             for (j = 0; value[j] != NULL; j++) {
@@ -107,7 +107,7 @@ int mem_set_value(char *var, char **value) {
 int mem_set_frame(char *store_lines[]) {
 
     int i, j;
-    for (i = 0; i < max_framestore; i++){
+    for (i = 0; i < MAX_FRAMESIZE; i++){
         if(frame_store[i] == NULL){
             frame_store[i] = malloc(sizeof(frame_t));
             for(j = 0; j < FRAME_SIZE; j++){
@@ -125,7 +125,7 @@ int mem_set_frame(char *store_lines[]) {
 char **mem_get_value(char *var_in) {
     int i;
 
-    for (i=0; i<max_varstore; i++){
+    for (i=0; i<MAX_VARMEMSIZE; i++){
         if (strcmp(var_store[i].var, var_in) == 0){
             return var_store[i].value;
         } 
@@ -135,9 +135,11 @@ char **mem_get_value(char *var_in) {
 }
 
 // run all the lines from script stored in shell memory space
+
+// if page fault happens, call 
+// page_fault_handler() -> do its job
 void mem_run_lines(pcb_node *head, int num_lines){
-    
-    int errorCode = 0;
+    int errorCode = 0, has_freespot = 0, *bitmap[MAX_FRAMESIZE];
     char line[100];
     char *line_piece;
     char *ret, all_lines[2];
@@ -147,10 +149,31 @@ void mem_run_lines(pcb_node *head, int num_lines){
     int end_flag, total_lines = head->total_lines;
     frame_t *cur_frame = NULL;
     frame_t *next_frame = NULL;
+
+    for(int k = 0; k < MAX_FRAMESIZE)
+
+    // check for fres spot
+    // run num_lines of lines
+    // NOW line index references to which index of line we are working on in whole file
+
+    // if we are not at the last frame that in MEMORY, then we are not having page fault
+    if(!head->is_lastframe){
+
+    }
+
+    else{
+
+    }
+    // else, page fault
+
+
+
+
     for(j = 0; j < num_lines; j++){
         end_flag = 0;
         frame_index = head->frame_index;
         line_index = head->line_index;
+        // if a page fault during run, we can not find frame_store[page_table[frame_index]] == NULL
         cur_frame = frame_store[page_table[frame_index]];
         has_nextpage = 0;
         next_valid_page = 0;

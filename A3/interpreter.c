@@ -188,7 +188,8 @@ int run(char* filename){
     }
     
     while(!ready_head->is_done){
-        // mem_run_lines in RR style
+        // mem_run_lines run 3 lines 
+        // page fault 
         mem_run_lines(ready_head,3);
     }
     

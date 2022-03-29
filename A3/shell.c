@@ -14,7 +14,9 @@ int parseInput(char ui[]);
 
 // Start of everything
 int main(int argc, char *argv[]) {
-	
+	int framesize = FRAMESIZE;
+	int varsize = VARMEMSIZE;
+	printf("Frame Store Size = %d; Variable Store Size = %d \n",framesize,varsize);
 	printf("%s\n", "Shell version 1.1 Created January 2022");
 	help();
 	FILE *tty; // default interact FILE stream to read user inputs
