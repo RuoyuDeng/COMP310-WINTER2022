@@ -7,15 +7,16 @@
 
 #include "interpreter.h"
 #include "shellmemory.h"
-
+#define MAX_FRAMESIZE FRAMESIZE
+#define MAX_VARMEMSIZE VARMEMSIZE
 
 int MAX_USER_INPUT = 1000;
 int parseInput(char ui[]);
 
 // Start of everything
 int main(int argc, char *argv[]) {
-	int framesize = FRAMESIZE;
-	int varsize = VARMEMSIZE;
+	int framesize = MAX_FRAMESIZE;
+	int varsize = MAX_VARMEMSIZE;
 	printf("Frame Store Size = %d; Variable Store Size = %d \n",framesize,varsize);
 	printf("%s\n", "Shell version 1.1 Created January 2022");
 	help();

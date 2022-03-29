@@ -107,6 +107,7 @@ int mem_set_value(char *var, char **value) {
 int mem_set_frame(char *store_lines[]) {
 
     int i, j;
+    int x = MAX_FRAMESIZE;
     for (i = 0; i < MAX_FRAMESIZE; i++){
         if(frame_store[i] == NULL){
             frame_store[i] = malloc(sizeof(frame_t));
@@ -153,14 +154,15 @@ void mem_run_lines(pcb_node *head, int num_lines){
 
     // traverse backwards to find the last_frame_index that is in memory
     for(int k = 33; k > -1; k--){
-        if(page_table[k] != -1) 
-            last_frame_index = k;
-
+        if(page_table[k] != -1){
+            last_frame_index = page_table[k];
+            break;
+        }
     }
     // initializa free spot array & taken_spots array
     for(int k = 0; k < MAX_FRAMESIZE; k++) {
-        free_spots[i] = -1;
-        taken_spots[i] = -1;
+        free_spots[k] = -1;
+        taken_spots[k] = -1;
     }
     
     // knows where we can insert a frame ex) free_spots = [1,3,5]
@@ -232,7 +234,8 @@ void mem_run_lines(pcb_node *head, int num_lines){
             frame_store[insert_index] = malloc(sizeof(frame_t));
             i = 0;
             while(fgets(line, sizeof(line), file) != NULL && i < 3){
-                frame_store[insert_index]->lines[i] = line;
+                frame_store[insert_index]->lines[i] = malloc(100);
+                strcpy(frame_store[insert_index]->lines[i],line);
                 i++;
             }
             
@@ -240,12 +243,12 @@ void mem_run_lines(pcb_node *head, int num_lines){
             while(page_table[i] != -1) i++;
             head->page_table[i] = insert_index;
             fclose(file);
+            head->is_lastframe = 0; // no matter what stragtegy used to handle page fault, reset back to normal
             break;
         }
 
         // else, NO page fault
         cur_frame = frame_store[page_table[frame_index]];
-        next_valid_page = 0;
 
         // Done cond 1: last line of script
         if(line_index == (head->total_lines-1)) end_flag = 1;

@@ -25,8 +25,9 @@ void append_pcb(pcb_node **ptr_head,int total_lines, int *page_table, char *file
         strcpy(cur_node->filename,filename);
         cur_node->page_table = malloc(34 * 4);
         i = 0;
-        while(page_table[i] != -1){
+        while(i<34){
             cur_node->page_table[i] = page_table[i];
+            i++;
         }
 
         cur_node->next = NULL;
@@ -51,8 +52,9 @@ void append_pcb(pcb_node **ptr_head,int total_lines, int *page_table, char *file
     strcpy(cur_node->next->filename,filename);
     cur_node->next->page_table = malloc(34 * 4);
     i = 0;
-    while(page_table[i] != -1){
+    while(i<34){
         cur_node->next->page_table[i] = page_table[i];
+        i++;
     }
     cur_node->next->next = NULL;
     return;
@@ -122,13 +124,13 @@ int loadfile(char *filename, pcb_node **ptr_head){
     // get all lines of code
     memset(line,0,sizeof(line));
     memset(lines_tostore,0,sizeof(lines_tostore));
-    memset(page_table,0,34);
     // load all lines of code into memory space (set_file)
     i = 0;
     while(fgets(line, sizeof(line), file) != NULL || i < 6){
         lines_tostore[linecount] = strdup(line);
         linecount++;
         total_lines++;
+        i++;
         // only call mem_set_frame when we have linecount == 3
         if(linecount == 3){
             // find the first valid index to insert the first line of the whole script
@@ -145,8 +147,9 @@ int loadfile(char *filename, pcb_node **ptr_head){
         }
         
     }
+
     // when has less than 3 lines of code left:
-    if(linecount == 1 || linecount == 2){
+    if((linecount == 1 || linecount == 2) && i < 6){
         frame_index = mem_set_frame(lines_tostore);
         if (frame_index == -1){
             printf("No more space to insert frame! \n");
