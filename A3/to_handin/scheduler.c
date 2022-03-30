@@ -1,0 +1,214 @@
+#include<stdlib.h>
+#include<string.h>
+#include<stdio.h>
+
+#include "shellmemory.h"
+#include "scheduler.h"
+#include "interpreter.h"
+int global_pid = 2000;
+
+// FOR ALL STRATEGIES: add to tail
+void append_pcb(pcb_node **ptr_head,int total_lines, int *page_table, char *filename){
+    pcb_node *cur_node = *ptr_head;
+    int i;
+
+    if(cur_node == NULL){
+        cur_node = malloc(sizeof(pcb_node));
+        cur_node->pid = global_pid;
+        cur_node->total_lines = total_lines;
+        cur_node->frame_index = 0;
+        cur_node->line_index = 0;
+        cur_node->is_done = 0;
+        cur_node->is_lastframe = 0;
+        cur_node->filename = malloc(50);
+        strcpy(cur_node->filename,filename);
+        cur_node->page_table = malloc(34 * 4);
+        cur_node->active_pagetable = malloc(34 * 4);
+        i = 0;
+        while(i<34){
+            cur_node->page_table[i] = page_table[i];
+            cur_node->active_pagetable[i] = page_table[i];
+            i++;
+        }
+
+        cur_node->next = NULL;
+        *ptr_head = cur_node;
+        return;
+    }
+    
+    // head exists, find the end of the linked list
+    while(cur_node->next != NULL){
+        cur_node = cur_node->next;
+    }
+    
+    // define the new pcb node & set up fileds
+    cur_node->next = malloc(sizeof(pcb_node));
+    cur_node->next->pid = (cur_node->pid) + 1;  // current pid based on previous one
+    cur_node->next->total_lines = total_lines;
+    cur_node->next->frame_index = 0;
+    cur_node->next->line_index = 0;
+    cur_node->next->is_done = 0;
+    cur_node->next->is_lastframe = 0;
+    cur_node->next->filename = malloc(50);
+    strcpy(cur_node->next->filename,filename);
+    cur_node->next->page_table = malloc(34 * 4);
+    cur_node->next->active_pagetable = malloc(34 * 4);
+    i = 0;
+    while(i<34){
+        cur_node->next->page_table[i] = page_table[i];
+        cur_node->next->active_pagetable[i] = page_table[i];
+        i++;
+    }
+    cur_node->next->next = NULL;
+    return;
+}
+
+void append_pcb_tohead(pcb_node *head, pcb_node *append_node){
+    pcb_node *tmp_node = head;
+    while(tmp_node->next != NULL){
+        tmp_node = tmp_node->next;
+    }
+    tmp_node->next = append_node;
+}
+
+// FCFS ONLY (remove head)
+pcb_node* pophead_pcb(pcb_node **ptr_head){
+    pcb_node *tmp_head = *ptr_head;
+    *ptr_head = tmp_head->next;
+    tmp_head->next = NULL;
+    return tmp_head;
+}
+
+
+int loadfile(char *filename, pcb_node **ptr_head){
+    char line[1000];
+    int total_lines = 0;
+    int frame_index = -2;
+    int frame_count = 0;
+    int linecount = 0, i;
+    char *lines_tostore[3];
+    char back_filename[50];
+    char cmd[100];
+    char cp[] = "cp ";
+    char back_path[] = "backing_store/";
+    int *page_table = malloc(34 * 4);
+    for(int i = 0; i < 34; i++){
+        page_table[i] = -1;
+    }
+
+    // form the new file name
+    memset(back_filename,0,50);
+    strcat(back_filename,back_path);
+    strcat(back_filename,filename);
+
+    // form the cp command
+    memset(cmd,0,100);
+    strcat(cmd,cp);
+    strcat(cmd,filename);
+    strcat(cmd," ");
+    strcat(cmd,back_filename);
+    system(cmd);
+
+    FILE *file = fopen(back_filename,"rt");  // the program is in a file
+    // file does not exist
+    if(file == NULL){
+		// printf("%s\n", "Bad command: File not found");
+        return 3;
+	}
+
+    
+    while(fgets(line, sizeof(line), file) != NULL){
+        total_lines++; // get the total lines of the script
+    }
+    fclose(file);
+
+    // reopen file to load content
+    file = fopen(back_filename,"rt");
+    // needs to know how many lines we need to skip to load the correct frame of lines of code
+    // file = fopen(back_filename,"rt");
+
+
+    // get all lines of code
+    memset(line,0,sizeof(line));
+    memset(lines_tostore,0,sizeof(lines_tostore));
+    // load all lines of code into memory space (set_file)
+    i = 0;
+    // either end of file, OR got 6 lines
+    while(fgets(line, sizeof(line), file) != NULL){
+        if(i == 6) break;
+        lines_tostore[linecount] = strdup(line);
+        linecount++;
+        i++;
+        // only call mem_set_frame when we have linecount == 3
+        if(linecount == 3){
+            // find the first valid index to insert the first line of the whole script
+            frame_index = mem_set_frame(lines_tostore);
+            if (frame_index == -1){
+                printf("No more space to insert frame! \n");
+                return -1;
+            } 
+            page_table[frame_count] = frame_index;
+            frame_count ++;
+            // reset to store next set of 3 lines
+            memset(lines_tostore,0,sizeof(lines_tostore));
+            linecount = 0;
+        }
+        
+    }
+
+    // when has less than 3 lines of code left:
+    if((linecount == 1 || linecount == 2) && i < 6){
+        frame_index = mem_set_frame(lines_tostore);
+        if (frame_index == -1){
+            printf("No more space to insert frame! \n");
+            return -1;
+        } 
+        page_table[frame_count] = frame_index;
+    }
+
+    
+    fclose(file);
+    append_pcb(ptr_head,total_lines,page_table,back_filename);
+    return 0;
+}
+
+int rrpoly(char* filenames[], int filenum){
+    int rest_lines = 0;
+    int errCode = 0;
+    pcb_node **ptr_head = malloc(8);
+    pcb_node *ready_head;
+    pcb_node *work_node = NULL;
+    *ptr_head = NULL;
+    // set up ready queue and load scripts into memory
+    for(int i = 1; i <= filenum; i++){
+        errCode = loadfile(filenames[i],ptr_head);
+        if(errCode == -1) {
+            return outofMemoryError();
+        }else if (errCode == 3){
+            return badcommandFileDoesNotExist();
+        }
+    }
+    ready_head = *ptr_head;
+    while(1){
+        if(ready_head == NULL) break;
+        work_node = pophead_pcb(&ready_head);
+        mem_run_lines(work_node,2);
+        // current work_node is done, do not add to tail, clean it up
+        if(work_node->is_done == 1) {
+            // mem_cleanup(work_node);
+            free(work_node);
+            continue;
+        }
+
+        // work is not done, but work_node is the only node left, so make it the new head
+        if(ready_head == NULL && work_node != NULL){
+            ready_head = work_node;
+            continue;
+        }
+        append_pcb_tohead(ready_head,work_node);
+    }
+    // clean up frame
+    clean_frame();
+    free(ptr_head);
+    return 0;
+}
