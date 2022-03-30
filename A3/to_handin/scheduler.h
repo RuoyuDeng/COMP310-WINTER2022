@@ -14,7 +14,7 @@ typedef struct pcb{
     int frame_index;      // current working frame of program
     int line_index;      // current working line of current working frame
     int *page_table;  // all frame indexes which locate where are frames of prog1 are in frame_store
-    int *active_pagetable; // pos: active, -1: not in use page, -2: inuse, but RAN page
+    int *active_pagetable; // the meaning of active_pagetable[i] if active_pagetable[i] >= 0: active / -1: not in use page /-2: used, already finished executing
     int is_done;
     int is_lastframe;
     char *filename;
