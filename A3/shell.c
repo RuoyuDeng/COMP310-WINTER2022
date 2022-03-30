@@ -51,7 +51,8 @@ int main(int argc, char *argv[]) {
 	
 	//init shell memory (var_store)
 	var_store_init();
-
+	// set up LRU_arr
+	init_LRU_arr();
 	
 
 

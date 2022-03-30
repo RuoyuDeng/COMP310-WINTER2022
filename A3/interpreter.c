@@ -6,6 +6,9 @@
 #include "scheduler.h"
 #include "shell.h"
 
+#define MAX_FRAMESIZE FRAMESIZE
+#define MAX_VARMEMSIZE VARMEMSIZE
+
 int MAX_ARGS_SIZE = 100;
 int help();
 int quit();
@@ -173,6 +176,7 @@ int echo(char* var) {
 
 // Task 1: modify run
 int run(char* filename){
+    printf("Frame Store Size = %d; Variable Store Size = %d \n",MAX_FRAMESIZE,MAX_VARMEMSIZE);
     int errCode = 0;
     pcb_node **ptr_head = malloc(8);
     pcb_node *ready_head;
@@ -202,15 +206,21 @@ int run(char* filename){
     
     // print to check if there is any dirty memory
     //mem_print_dirtymem();
+
+    // clean up frame
+    clean_frame();
     return errCode;
 }
 
 int exec(char* filenames[], int args_size){
+	printf("Frame Store Size = %d; Variable Store Size = %d \n",MAX_FRAMESIZE,MAX_VARMEMSIZE);
     // exec prog1 prog2 prog3 FCFS (command_args)
     // all polies (1. the address of first file, 2. total number of files to read)
-
+    int errorCode;
     if(strcmp(filenames[args_size-1],"RR") == 0){
-        return rrpoly(filenames,args_size-2);
+        errorCode = rrpoly(filenames,args_size-2);
+        clean_frame();
+        return errorCode;
     }
     // else if(strcmp(filenames[args_size-1],"FCFS") == 0){
     //     return fcfspoly(filenames,args_size-2);
@@ -221,6 +231,9 @@ int exec(char* filenames[], int args_size){
     // else if(strcmp(filenames[args_size-1],"AGING") == 0){
     //     return agingpoly(filenames,args_size-2);
     // }
+
+    // clean up frame
+    
     return badcommand();
 }
 

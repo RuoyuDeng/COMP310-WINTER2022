@@ -8,8 +8,9 @@
 #define MAX_TOKEN_SIZE 6
 #define MAX_LINE_SIZE 100
 #define FRAME_SIZE 3
-#define MAX_FRAMESIZE FRAMESIZE
+#define MAX_FRAMESIZE FRAMESIZE/3
 #define MAX_VARMEMSIZE VARMEMSIZE
+int frame_full = 0;
 
 typedef struct memory_struct{
     char *var;
@@ -23,8 +24,37 @@ typedef struct memory_frame{
 
 memvar_t var_store[MAX_VARMEMSIZE];
 frame_t *frame_store[MAX_FRAMESIZE];
+int LRU_arr[MAX_FRAMESIZE];
+
 
 // Helper functions
+// move most recently used frame_index to front
+
+void clean_frame(){
+    for(int i = 0; i < MAX_FRAMESIZE; i++){
+        free(frame_store[i]);
+        frame_store[i] = NULL;
+    }
+}
+
+void init_LRU_arr(){
+    for(int i = 0; i < MAX_FRAMESIZE; i++){
+        LRU_arr[i] = i;
+    }
+}
+
+
+void move_LRU(int *LRU_arr, int LRU_index){
+    int i,j, tmp = 0;
+    i = 0;
+    while(LRU_arr[i] != LRU_index) i++;
+    tmp = LRU_arr[i];
+    for(j = i; j >= 0 ;j--){
+        LRU_arr[j] = LRU_arr[j-1];
+    }
+    LRU_arr[0] = tmp;
+}
+
 int match(char *model, char *var) {
     int i, len=strlen(var), matchCount=0;
     for(i=0;i<len;i++)
@@ -102,24 +132,25 @@ int mem_set_value(char *var, char **value) {
 
 }
 
+// 0 1 2 3
+// e e e e 
 // return the first free spot to insert the frame
 // return -1 if the frame store is full
 int mem_set_frame(char *store_lines[]) {
-
-    int i, j;
-    int x = MAX_FRAMESIZE;
+    int i, j, insert_index = -1, is_full = 1;
     for (i = 0; i < MAX_FRAMESIZE; i++){
         if(frame_store[i] == NULL){
-            frame_store[i] = malloc(sizeof(frame_t));
+            if(insert_index == -1) insert_index = i;
+            frame_store[insert_index] = malloc(sizeof(frame_t));
             for(j = 0; j < FRAME_SIZE; j++){
-                frame_store[i]->lines[j] = malloc(100); // each line has maximum 100 chars
-                frame_store[i]->lines[j] = store_lines[j];
+                frame_store[insert_index]->lines[j] = malloc(100); // each line has maximum 100 chars
+                memset(frame_store[insert_index]->lines[j],0,100);
+                frame_store[insert_index]->lines[j] = store_lines[j];
             }
-            return i; // return the frame index where we insert the frame
+            move_LRU(LRU_arr,insert_index); // change most recently used page
         }
-        
     }
-    return -1; // all full
+    return insert_index; // all full
 }
 
 //get value based on input key
@@ -159,32 +190,32 @@ void mem_run_lines(pcb_node *head, int num_lines){
             break;
         }
     }
-    // initializa free spot array & taken_spots array
-    for(int k = 0; k < MAX_FRAMESIZE; k++) {
-        free_spots[k] = -1;
-        taken_spots[k] = -1;
-    }
+    // // initializa free spot array & taken_spots array
+    // for(int k = 0; k < MAX_FRAMESIZE; k++) {
+    //     free_spots[k] = -1;
+    //     taken_spots[k] = -1;
+    // }
     
-    // knows where we can insert a frame ex) free_spots = [1,3,5]
-    // -> frame 1 frame 3 frame 5 are free
-    i = 0;
-    j = 0;
-    for(int k = 0; k < MAX_FRAMESIZE; k++){
-        if(frame_store[k] == NULL) {
-            free_spots[i] = k;
-            i++;
-        } else {
-            taken_spots[j] = k;
-            num_taken_spots += 1;
-            j++;
-        }
-    }
+    // // knows where we can insert a frame ex) free_spots = [1,3,5]
+    // // -> frame 1 frame 3 frame 5 are free
+    // i = 0;
+    // j = 0;
+    // for(int k = 0; k < MAX_FRAMESIZE; k++){
+    //     if(frame_store[k] == NULL) {
+    //         free_spots[i] = k;
+    //         i++;
+    //     } else {
+    //         taken_spots[j] = k;
+    //         num_taken_spots += 1;
+    //         j++;
+    //     }
+    // }
     
-    if(free_spots[0] != -1) {
-        free_spot_index = free_spots[0];   
-    }
-    // if the first index in free_spots array is -1, then we have no free spots, so need to have evict_index 
-    else evict_index = rand() % num_taken_spots;
+    // if(free_spots[0] != -1) {
+    //     free_spot_index = free_spots[0];   
+    // }
+    // // if the first index in free_spots array is -1, then we have no free spots, so need to have evict_index 
+    // else evict_index = rand() % num_taken_spots;
 
 
     // run num_lines of lines
@@ -194,33 +225,31 @@ void mem_run_lines(pcb_node *head, int num_lines){
         end_flag = 0;
         frame_index = head->frame_index;
         line_index = head->line_index;
+        if(frame_index == -1) frame_index = LRU_arr[0];
         // if we are at the last frame that in MEMORY, then we are having page fault
-        if(head->is_lastframe){
+        if(head->is_lastframe || frame_full){
             // frame is full, evict one page
-            if(evict_index != -1){
+            //if(evict_index != -1){
+            file = fopen(head->filename,"rt");
+            if(frame_full){
                 // print the evicited page if frame is full
+                evict_index = LRU_arr[MAX_FRAMESIZE-1];
                 printf("Page fault! Victim page contents: \n");
                 printf("<the contents of the page, line by line> \n");
-                for(i = 0; i < 2; i++){
-                    printf("%s \n",frame_store[evict_index]->lines[i]);
+                for(i = 0; i < 3; i++){
+                    printf("%s",frame_store[evict_index]->lines[i]);
                 }
                 printf("End of victim page contents.\n");
 
+                free(frame_store[evict_index]);
                 frame_store[evict_index] = NULL;
-                insert_index = evict_index;
+                move_LRU(LRU_arr,evict_index);
+                insert_index = LRU_arr[0];
             }
 
             else{
                 // frame is not full, read the lines from file (continously) to form 1 page
-                file = fopen(head->filename,"rt");
                 // ex) line_index = 4, then skip 5 lines
-                i = 0;
-                memset(line,0,sizeof(line));
-                while(i < line_index){
-                    fgets(line, sizeof(line), file);
-                    i++;
-                }
-
                 
                 for(i = 0; i < MAX_FRAMESIZE; i++){
                     if(frame_store[i] == NULL){
@@ -232,23 +261,44 @@ void mem_run_lines(pcb_node *head, int num_lines){
 
             // write to the target insert frame  && frame_store[insert_index] is NULL (precondition)
             frame_store[insert_index] = malloc(sizeof(frame_t));
+            move_LRU(LRU_arr,insert_index);
+
+            i = 0;
+            while(i < line_index){
+                fgets(line, sizeof(line), file);
+                i++;
+            }
+
+            i = 0;
+            while(i<3){
+                frame_store[insert_index]->lines[i] = malloc(100);
+                memset(frame_store[insert_index]->lines[i],0,100);
+                i++;
+            }
+
+            memset(line,0,sizeof(line));
             i = 0;
             while(fgets(line, sizeof(line), file) != NULL && i < 3){
-                frame_store[insert_index]->lines[i] = malloc(100);
                 strcpy(frame_store[insert_index]->lines[i],line);
                 i++;
             }
             
             i = 0;
-            while(page_table[i] != -1) i++;
+            while(page_table[i] != -1) {
+                if (page_table[i] == insert_index) break;
+                i++;
+            }
+            // find if cur insert_index in page_table or not, if not add to end
             head->page_table[i] = insert_index;
             fclose(file);
             head->is_lastframe = 0; // no matter what stragtegy used to handle page fault, reset back to normal
+            frame_full = 0;
             break;
         }
 
         // else, NO page fault
         cur_frame = frame_store[page_table[frame_index]];
+        move_LRU(LRU_arr,frame_index);
 
         // Done cond 1: last line of script
         if(line_index == (head->total_lines-1)) end_flag = 1;
@@ -297,6 +347,7 @@ void mem_run_lines(pcb_node *head, int num_lines){
         
         // at last line of last frame && there might be more lines coming up, which can cause page fault
         if(frame_index == last_frame_index && new_line_index == 2){
+            if(frame_index == MAX_FRAMESIZE - 1) frame_full = 1;
             head->is_lastframe = 1;
         }
         memset(line,0,sizeof(line));
@@ -304,7 +355,7 @@ void mem_run_lines(pcb_node *head, int num_lines){
         head->line_index += 1;
         // move to next page in page table by increment the frame_index by 1
         if(new_line_index == 2) {
-            head->frame_index += 1;
+            head->frame_index = head->page_table[frame_index+1];
         }
         if(end_flag){
             break;

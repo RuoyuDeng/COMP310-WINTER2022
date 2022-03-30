@@ -14,5 +14,91 @@ echo OOP3L12OO
 -> page fault
 echo OOP3L13OO
 
+0
+OOP2L4OO
+OOP2L5OO
+OOP2L6OO
+1
+echo OOP1L4OO
+echo OOP1L5OO
+echo OOP1L6OO
+2
+echo OOP1L7OO
+echo OOP1L8OO
+3
+OOP2L1OO
+OOP2L2OO
+OOP2L3OO
+
+
+3210
+
+0321
+[03]
+
+[30]
+
+
+FRAME_AFTER run prog1
+0
+echo OOP1L1OO
+echo OOP1L2OO
+echo OOP1L3OO
+
+1
+echo OOP1L4OO
+echo OOP1L5OO
+echo OOP1L6OO
+
+2
+echo OOP1L7OO
+echo OOP1L8OO
+
+
+
+FRAME_WHEN_LOAD PROG2
+Step 1: FRAME[3] is empty, load first 3 lines
+of prog2
+
+0
+echo OOP1L1OO
+echo OOP1L2OO
+echo OOP1L3OO
+
+1
+echo OOP1L4OO
+echo OOP1L5OO
+echo OOP1L6OO
+
+2
+echo OOP1L7OO
+echo OOP1L8OO
+
+3
+echo OOP2L1OO
+echo OOP2L2OO
+echo OOP2L3OO
+
+Step 2: No frame is empty, but we still need to
+load 4-6 lines of prog2, so we use LRU to find
+which frame we can evict (in this case: FRAME[0])
+0
+echo OOP2L4OO
+echo OOP2L5OO
+echo OOP2L6OO
+
+1
+echo OOP1L4OO
+echo OOP1L5OO
+echo OOP1L6OO
+
+2
+echo OOP1L7OO
+echo OOP1L8OO
+
+3
+echo OOP2L1OO
+echo OOP2L2OO
+echo OOP2L3OO
 
 

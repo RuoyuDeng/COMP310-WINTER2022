@@ -115,3 +115,26 @@ echo OOP1L8OO
 
 rr(2)
 fraemesize = 12
+
+
+
+
+
+
+
+
+MOST_RECENT -> LEAST_RECENT
+543210
+
+run line 1,2 in prog10 (in frame 0, 0 is most freq)
+054321
+
+line X,X+1 in same frame: -> move ONLY the frame index to front
+
+....
+
+420531
+
+042531 -> 104253
+
+when we run a line, put frame_index to the front, push the others

@@ -147,13 +147,27 @@ echo OOP2L1OOO
 
 
 
+BUG 1: PAGE fault when running 1 file ONLY
+run prog1 ->13 lines
+
+4 frame (12 lines)
+
+BUG 2: PAGE fault when running ANOTHER FILE after running 1 file
+run prog1 (12 lines) -> memory_full
+-> mem_run_lines -> frame_index == MAX_FRAMESIZE - 1 && 
+
+run prog2 (UNKNOWN LINES) -> page fault
 
 
 
 
+012
 
+012 -> 1 02
+102
+210
 
-
+-> 
 
 
 
@@ -218,3 +232,81 @@ prog3: 1 2
 prog1: 4 not done? NOT POSSIBLE
 prog2: 4 
 prog3: 5 
+
+
+
+
+
+0 
+echo P10L1
+set a PTenLineTwoSet; print a
+echo P10L3
+
+1
+echo $a
+echo P10L5
+set a PTenLineSixSet; echo $a
+
+2
+echo P11L1
+set w PEightLineTwoSet; print w
+echo P11L3
+
+3
+echo $w
+echo P11L5
+echo P11L6
+
+4
+echo P12L1
+echo P12L2
+echo P12L3
+
+5
+echo P12L4
+echo P12L5
+echo P12L6
+
+
+
+
+
+
+0 1 2 -1 -1 -1 -1
+
+frame_index = -1
+
+
+
+
+0
+OOP1L1OO
+OOP1L2OO
+OOP1L3OO
+1
+OOP1L4OO
+OOP1L5OO
+OOP1L6OO
+2
+OOP1L7OO
+OOP1L8OO
+3
+echo OOP2L1OO
+echo OOP2L2OO
+echo OOP2L3OO
+
+load_file() -> new run/exec -> old exec/run must be done
+
+-> might have full frame OR free spot in frame
+-> full frame: 
+    1. defined by previous exec/run
+    2. defined by previous mem_set_frame
+    -> both changed full_frame to 1
+-> free_spot: then previous run/exec did not set full_frame to true
+
+frame_full = 1
+1230
+0->EMPTY
+
+frame_store[0] = NULL
+i = 0  
