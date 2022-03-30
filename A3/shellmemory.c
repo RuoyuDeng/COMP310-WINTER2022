@@ -32,6 +32,9 @@ int LRU_arr[MAX_FRAMESIZE];
 
 void clean_frame(){
     for(int i = 0; i < MAX_FRAMESIZE; i++){
+        for(int j = 0; j < 3; j++){
+            memset(frame_store[i]->lines[j],0,100);
+        }
         free(frame_store[i]);
         frame_store[i] = NULL;
     }
@@ -50,7 +53,9 @@ void move_LRU(int *LRU_arr, int LRU_index){
     while(LRU_arr[i] != LRU_index) i++;
     tmp = LRU_arr[i];
     for(j = i; j >= 0 ;j--){
-        LRU_arr[j] = LRU_arr[j-1];
+        if(frame_store[j] != NULL){
+            LRU_arr[j] = LRU_arr[j-1];
+        }
     }
     LRU_arr[0] = tmp;
 }
@@ -91,14 +96,6 @@ int var_store_init(){
     return 0;
 }
 
-// // reset frame store
-// void frame_store_init(){
-//     int i;
-//     for (i = 0; i < MAX_FRAMESIZE; i++){
-//         frame_store[i] = NULL;
-//     }
-// }
-
 
 // Set key value pair
 // return the spot index where we set the variable (>=0)
@@ -132,8 +129,6 @@ int mem_set_value(char *var, char **value) {
 
 }
 
-// 0 1 2 3
-// e e e e 
 // return the first free spot to insert the frame
 // return -1 if the frame store is full
 int mem_set_frame(char *store_lines[]) {
@@ -181,6 +176,7 @@ void mem_run_lines(pcb_node *head, int num_lines){
     int end_flag, total_lines = head->total_lines, evict_index = -1, insert_index;
     frame_t *cur_frame = NULL;
     frame_t *next_frame = NULL;
+    int line_len;
     FILE *file = NULL;
 
     // traverse backwards to find the last_frame_index that is in memory
@@ -190,36 +186,6 @@ void mem_run_lines(pcb_node *head, int num_lines){
             break;
         }
     }
-    // // initializa free spot array & taken_spots array
-    // for(int k = 0; k < MAX_FRAMESIZE; k++) {
-    //     free_spots[k] = -1;
-    //     taken_spots[k] = -1;
-    // }
-    
-    // // knows where we can insert a frame ex) free_spots = [1,3,5]
-    // // -> frame 1 frame 3 frame 5 are free
-    // i = 0;
-    // j = 0;
-    // for(int k = 0; k < MAX_FRAMESIZE; k++){
-    //     if(frame_store[k] == NULL) {
-    //         free_spots[i] = k;
-    //         i++;
-    //     } else {
-    //         taken_spots[j] = k;
-    //         num_taken_spots += 1;
-    //         j++;
-    //     }
-    // }
-    
-    // if(free_spots[0] != -1) {
-    //     free_spot_index = free_spots[0];   
-    // }
-    // // if the first index in free_spots array is -1, then we have no free spots, so need to have evict_index 
-    // else evict_index = rand() % num_taken_spots;
-
-
-    // run num_lines of lines
-    // NOW line index references to which index of line we are working on in whole file
 
     for(j = 0; j < num_lines; j++){
         end_flag = 0;
@@ -227,7 +193,7 @@ void mem_run_lines(pcb_node *head, int num_lines){
         line_index = head->line_index;
         if(frame_index == -1) frame_index = LRU_arr[0];
         // if we are at the last frame that in MEMORY, then we are having page fault
-        if(head->is_lastframe || frame_full){
+        if(head->is_lastframe){
             // frame is full, evict one page
             //if(evict_index != -1){
             file = fopen(head->filename,"rt");
@@ -237,14 +203,18 @@ void mem_run_lines(pcb_node *head, int num_lines){
                 printf("Page fault! Victim page contents: \n");
                 printf("<the contents of the page, line by line> \n");
                 for(i = 0; i < 3; i++){
-                    printf("%s",frame_store[evict_index]->lines[i]);
+                    line_len = strlen(frame_store[evict_index]->lines[i]);
+                    if((frame_store[evict_index]->lines[i])[line_len-1] == '\n')
+                        printf("%s",frame_store[evict_index]->lines[i]);
+                    else printf("%s\n",frame_store[evict_index]->lines[i]);
                 }
                 printf("End of victim page contents.\n");
 
                 free(frame_store[evict_index]);
                 frame_store[evict_index] = NULL;
-                move_LRU(LRU_arr,evict_index);
-                insert_index = LRU_arr[0];
+                // move_LRU(LRU_arr,evict_index);
+                // insert_index = LRU_arr[0];
+                insert_index = evict_index;
             }
 
             else{
@@ -261,7 +231,7 @@ void mem_run_lines(pcb_node *head, int num_lines){
 
             // write to the target insert frame  && frame_store[insert_index] is NULL (precondition)
             frame_store[insert_index] = malloc(sizeof(frame_t));
-            move_LRU(LRU_arr,insert_index);
+            move_LRU(LRU_arr,insert_index); // LRU change in page fault
 
             i = 0;
             while(i < line_index){
@@ -292,13 +262,21 @@ void mem_run_lines(pcb_node *head, int num_lines){
             head->page_table[i] = insert_index;
             fclose(file);
             head->is_lastframe = 0; // no matter what stragtegy used to handle page fault, reset back to normal
-            frame_full = 0;
+            j = 1; // j = 1 -> full frame, j = 0 -> not full
+            for(i = 0; i < MAX_FRAMESIZE; i++){
+                if(frame_store[i] == NULL){
+                    j = 0;
+                    break;
+                }
+            }
+            if(j) frame_full = 1;
+            else frame_full = 0;
             break;
         }
 
         // else, NO page fault
         cur_frame = frame_store[page_table[frame_index]];
-        move_LRU(LRU_arr,frame_index);
+        move_LRU(LRU_arr,page_table[frame_index]); // change NOT in page fault
 
         // Done cond 1: last line of script
         if(line_index == (head->total_lines-1)) end_flag = 1;
@@ -312,23 +290,6 @@ void mem_run_lines(pcb_node *head, int num_lines){
             end_flag = 1;
             break;
         }
-
-        // // otherwise....
-        // // new_line_index = 0 or 1
-        // if(new_line_index != 2) {
-        //     has_nextpage = 0;
-        // }
-
-        // // new_line_index = 2 -> we will be at next page after reading this line
-        // else {
-        //     // case 1: there is next page (might be page fault, but later) -> update frame_index
-        //     // case 2: there is no next page (only read 1 line) -> do not update frame_index
-        //     // if(frame_index != last_frame_index){
-        //     //     //!!!!!!!!!!!!!!!!!!! Later page fault!!!!!!!!!!!!!!!!!!
-                
-        //     // }
-        //     has_nextpage = 1;
-        // }
 
         // run a command
         memset(line,0,sizeof(line));
@@ -346,8 +307,9 @@ void mem_run_lines(pcb_node *head, int num_lines){
         else parseInput(line); // if it does not, then execute the line normally
         
         // at last line of last frame && there might be more lines coming up, which can cause page fault
-        if(frame_index == last_frame_index && new_line_index == 2){
-            if(frame_index == MAX_FRAMESIZE - 1) frame_full = 1;
+        if(page_table[frame_index]== last_frame_index && new_line_index == 2){
+            // if(page_table[frame_index] == MAX_FRAMESIZE - 1) frame_full = 1;
+            // check if all pages loaded in memory are done
             head->is_lastframe = 1;
         }
         memset(line,0,sizeof(line));
@@ -355,7 +317,9 @@ void mem_run_lines(pcb_node *head, int num_lines){
         head->line_index += 1;
         // move to next page in page table by increment the frame_index by 1
         if(new_line_index == 2) {
-            head->frame_index = head->page_table[frame_index+1];
+            i = 0;
+            while(head->page_table[i] != head->page_table[frame_index]) i++;
+            head->frame_index = i+1;
         }
         if(end_flag){
             break;
@@ -364,109 +328,6 @@ void mem_run_lines(pcb_node *head, int num_lines){
     if(end_flag) head->is_done = 1;
     
     return;
-
-        
-        
-
-        // // line_index = 0 or 1
-        // if((line_index + 1) % 3 != 0) {
-        //     for(i = line_index; i <= line_index+1; i++){
-        //         // clean up the line buffer to store the command
-        //         memset(line,0,sizeof(line));
-        //         if(cur_frame->lines[i] == NULL){
-        //             end_flag = 1;
-        //             break;
-        //         }
-        //         strcpy(line,cur_frame->lines[i]);
-        //         // check if the line has ; or not
-        //         ret = strchr(line,';');
-        //         if(ret != NULL){
-        //             line_piece = strtok(line,";");
-        //             while(line_piece != NULL){
-        //                 errorCode = parseInput(line_piece);	// which calls interpreter()
-        //                 if (errorCode == -1) exit(99);
-        //                 line_piece = strtok(NULL,";");
-        //             }
-        //         }
-        //         // if it does not, then execute the line normally
-        //         parseInput(line);
-        //         memset(line,0,sizeof(line));
-        //     }
-        //     new_line_index = i % 3;
-        //     if(new_line_index == 0){
-        //         head->frame_index += 1;
-        //     }
-        //     head->line_index = new_line_index;
-        // }
-
-        // // line_index = 2
-        // // case 1: there is next page (might be page fault, but later)
-        // // case 2: there is no next page (only read 1 line)
-        // // check if frame_index == last_frame_index
-        // else{
-        //     if(frame_index != last_frame_index){
-        //         //!!!!!!!!!!!!!!!!!!! Later page fault!!!!!!!!!!!!!!!!!!
-        //         next_frame = frame_store[page_table[frame_index+1]]; 
-        //         //!!!!!!!!!!!!!!!!!!! Later page fault!!!!!!!!!!!!!!!!!!
-        //         has_nextpage = 1;
-        //     }
-
-        //     // we assume next pages exists for now, and check for NULL lines
-        //     if(!has_nextpage){
-        //         next_valid_page = (cur_frame->lines[2] == NULL); 
-        //     }
-            
-        //     // the last line of current page is NULL, break the loop
-        //     if(next_valid_page) {
-        //         head->is_done = 1;
-        //         break;
-        //     }
-            
-        //     // if the last line of current page is not NULL and has no next page, we done
-        //     if(!next_valid_page && !has_nextpage) end_flag = 1;
-        //     // run the last line in this page
-        //     // clean up the line buffer to store the command
-        //     memset(line,0,sizeof(line));
-        //     strcpy(line,cur_frame->lines[2]);
-        //     // check if the line has ; or not
-        //     ret = strchr(line,';');
-        //     if(ret != NULL){
-        //         line_piece = strtok(line,";");
-        //         while(line_piece != NULL){
-        //             errorCode = parseInput(line_piece);	// which calls interpreter()
-        //             if (errorCode == -1) exit(99);
-        //             line_piece = strtok(NULL,";");
-        //         }
-        //     }
-        //     // if it does not, then execute the line normally
-        //     parseInput(line);
-        //     memset(line,0,sizeof(line));
-
-        //     if(has_nextpage){
-        //         // run first line in next page
-        //         // clean up the line buffer to store the command
-        //         memset(line,0,sizeof(line));
-        //         strcpy(line,next_frame->lines[0]);
-        //         // check if the line has ; or not
-        //         ret = strchr(line,';');
-        //         if(ret != NULL){
-        //             line_piece = strtok(line,";");
-        //             while(line_piece != NULL){
-        //                 errorCode = parseInput(line_piece);	// which calls interpreter()
-        //                 if (errorCode == -1) exit(99);
-        //                 line_piece = strtok(NULL,";");
-        //             }
-        //         }
-        //         // if it does not, then execute the line normally
-        //         parseInput(line);
-        //         memset(line,0,sizeof(line));
-        //     }
-            
-            
-        //     head->frame_index += 1;
-        //     head->line_index = 1;
-        // }
-    
     
 }
 

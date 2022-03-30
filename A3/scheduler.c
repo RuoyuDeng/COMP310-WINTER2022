@@ -199,7 +199,8 @@ int rrpoly(char* filenames[], int filenum){
         }
         append_pcb_tohead(ready_head,work_node);
     }
-
+    clean_frame();
+    var_store_init();
     free(ptr_head);
     // mem_print_dirtymem();
     return 0;

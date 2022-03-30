@@ -1,104 +1,66 @@
-run prog3:
-echo OOP3L1OO
-echo OOP3L2OO
-echo OOP3L3OO
-echo OOP3L4OO
-echo OOP3L5OO
-echo OOP3L6OO
-echo OOP3L7OO
-echo OOP3L8OO
-echo OOP3L9OO
-echo OOP3L1OOO
-echo OOP3L11OO
-echo OOP3L12OO
--> page fault
-echo OOP3L13OO
-
 0
-OOP2L4OO
-OOP2L5OO
-OOP2L6OO
+echo P7L1 -> echo P8L7
+echo P7L2 -> echo P8L8
+echo P7L3
 1
-echo OOP1L4OO
-echo OOP1L5OO
-echo OOP1L6OO
+echo P7L4
+echo P7L5
+echo P7L6
 2
-echo OOP1L7OO
-echo OOP1L8OO
+echo P8L1
+echo P8L2
+echo P8L3
 3
-OOP2L1OO
-OOP2L2OO
-OOP2L3OO
+echo P8L4
+echo P8L5
+echo P8L6
+4
+echo P9L1
+echo P9L2
+echo P9L3
+5 
+echo P9L4
+echo P9L5
+echo P9L6
+6
+echo P7L7
 
+prog7 prog8
+try to read P7L7:page fault, read to frame[6]
+move prog7 to the back
 
-3210
+prog8 prog7
+try to read P8L7:page fault, remove frame[0],
+move prog8 to the back
 
-0321
-[03]
+prog7 prog8
+echo P7L7
 
-[30]
+prog8
+echo P8L7
 
+0123456
+5432106
 
-FRAME_AFTER run prog1
-0
-echo OOP1L1OO
-echo OOP1L2OO
-echo OOP1L3OO
+0543216
+2054316
+4205316
+0425316
 
-1
-echo OOP1L4OO
-echo OOP1L5OO
-echo OOP1L6OO
+1042536
 
-2
-echo OOP1L7OO
-echo OOP1L8OO
+2104536
 
+3210456
 
+4321056
 
-FRAME_WHEN_LOAD PROG2
-Step 1: FRAME[3] is empty, load first 3 lines
-of prog2
+5432106
 
-0
-echo OOP1L1OO
-echo OOP1L2OO
-echo OOP1L3OO
+1543206
+3154206
+5314206
 
-1
-echo OOP1L4OO
-echo OOP1L5OO
-echo OOP1L6OO
+6531420
 
-2
-echo OOP1L7OO
-echo OOP1L8OO
-
-3
-echo OOP2L1OO
-echo OOP2L2OO
-echo OOP2L3OO
-
-Step 2: No frame is empty, but we still need to
-load 4-6 lines of prog2, so we use LRU to find
-which frame we can evict (in this case: FRAME[0])
-0
-echo OOP2L4OO
-echo OOP2L5OO
-echo OOP2L6OO
-
-1
-echo OOP1L4OO
-echo OOP1L5OO
-echo OOP1L6OO
-
-2
-echo OOP1L7OO
-echo OOP1L8OO
-
-3
-echo OOP2L1OO
-echo OOP2L2OO
-echo OOP2L3OO
-
-
+0653142

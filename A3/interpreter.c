@@ -209,6 +209,7 @@ int run(char* filename){
 
     // clean up frame
     clean_frame();
+    var_store_init();
     return errCode;
 }
 
@@ -218,9 +219,8 @@ int exec(char* filenames[], int args_size){
     // all polies (1. the address of first file, 2. total number of files to read)
     int errorCode;
     if(strcmp(filenames[args_size-1],"RR") == 0){
-        errorCode = rrpoly(filenames,args_size-2);
-        clean_frame();
-        return errorCode;
+        
+        return rrpoly(filenames,args_size-2);
     }
     // else if(strcmp(filenames[args_size-1],"FCFS") == 0){
     //     return fcfspoly(filenames,args_size-2);
