@@ -59,3 +59,57 @@ echo P12L5
 echo P12L6
 End of victim page contents.
 P12L13
+
+
+
+0
+echo P10L1
+set a PTenLineTwoSet; print a
+echo P10L3
+
+1
+echo $a
+echo P10L5
+set a PTenLineSixSet; echo $a
+
+2
+echo P11L7
+echo P11L8
+echo P11L9
+
+3
+echo $w
+echo P11L5
+echo P11L6
+[2, 3] 0>1
+[-1, -2]
+4
+echo P12L7
+echo P12L8
+echo P12L9
+
+5
+echo P12L4
+echo P12L5
+echo P12L6
+
+10 11 12 PF 
+(frame_index = 0 -> first page in page table, page_table[0] = 0)
+(line_index = 6)
+11 12 10 PF
+
+12 10 11 PF
+
+10 11 12
+
+11 [2,3,-1, -1, -1, -1, -1, -1, -1]
+unrun_page_table[]
+2 (last unrun frame)
+3 ()
+
+p:  [2,3,-1, -1, -1, -1, -1, -1, -1]
+p[0] -> frame[2] ->p[1]
+
+p'[1] == -2 is_last_frame = 1
+
+p': [-2,-2,-1, -1, -1, -1, -1, -1, -1]

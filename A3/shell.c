@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
@@ -54,8 +53,6 @@ int main(int argc, char *argv[]) {
 	// set up LRU_arr
 	init_LRU_arr();
 	
-
-
 	while(1) {			
 		tty = fopen("/dev/tty", "r");				
 		printf("%c ",prompt);

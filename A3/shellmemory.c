@@ -15,7 +15,6 @@ int frame_full = 0;
 typedef struct memory_struct{
     char *var;
     char *value[MAX_TOKEN_SIZE]; // ls[0] = "word", ls[1] = "word2"
-    // char line[MAX_LINE_SIZE]; // used to store a line for the file, "set x 10"
 } memvar_t;
 
 typedef struct memory_frame{
@@ -29,21 +28,26 @@ int LRU_arr[MAX_FRAMESIZE];
 
 // Helper functions
 // move most recently used frame_index to front
-
-void clean_frame(){
-    for(int i = 0; i < MAX_FRAMESIZE; i++){
-        for(int j = 0; j < 3; j++){
-            memset(frame_store[i]->lines[j],0,100);
-        }
-        free(frame_store[i]);
-        frame_store[i] = NULL;
-    }
-}
-
 void init_LRU_arr(){
     for(int i = 0; i < MAX_FRAMESIZE; i++){
         LRU_arr[i] = i;
     }
+    return;
+}
+
+
+void clean_frame(){
+    for(int i = 0; i < MAX_FRAMESIZE; i++){
+        if(frame_store[i] == NULL) continue;
+        for(int j = 0; j < 3; j++){
+            if(frame_store[i]->lines[j] != NULL)
+                memset(frame_store[i]->lines[j],0,100);
+        }
+        // free(frame_store[i]);
+        frame_store[i] = NULL;
+    }
+    init_LRU_arr();
+    return;
 }
 
 
@@ -58,6 +62,7 @@ void move_LRU(int *LRU_arr, int LRU_index){
         }
     }
     LRU_arr[0] = tmp;
+    return;
 }
 
 int match(char *model, char *var) {
@@ -172,7 +177,7 @@ void mem_run_lines(pcb_node *head, int num_lines){
     char *line_piece;
     char *ret, all_lines[2];
     int *page_table = head->page_table;
-    int line_index, new_line_index, frame_index, i,j, last_frame_index,next_valid_page;
+    int line_index, new_line_index, frame_index, i,j,run_index, last_frame_index,next_valid_page;
     int end_flag, total_lines = head->total_lines, evict_index = -1, insert_index;
     frame_t *cur_frame = NULL;
     frame_t *next_frame = NULL;
@@ -187,11 +192,14 @@ void mem_run_lines(pcb_node *head, int num_lines){
         }
     }
 
-    for(j = 0; j < num_lines; j++){
+    for(run_index = 0; run_index < num_lines; run_index++){
         end_flag = 0;
         frame_index = head->frame_index;
         line_index = head->line_index;
         if(frame_index == -1) frame_index = LRU_arr[0];
+        if(head->active_pagetable[frame_index] == -2){
+            head->is_lastframe = 1;
+        }
         // if we are at the last frame that in MEMORY, then we are having page fault
         if(head->is_lastframe){
             // frame is full, evict one page
@@ -201,7 +209,6 @@ void mem_run_lines(pcb_node *head, int num_lines){
                 // print the evicited page if frame is full
                 evict_index = LRU_arr[MAX_FRAMESIZE-1];
                 printf("Page fault! Victim page contents: \n");
-                printf("<the contents of the page, line by line> \n");
                 for(i = 0; i < 3; i++){
                     line_len = strlen(frame_store[evict_index]->lines[i]);
                     if((frame_store[evict_index]->lines[i])[line_len-1] == '\n')
@@ -260,7 +267,12 @@ void mem_run_lines(pcb_node *head, int num_lines){
             }
             // find if cur insert_index in page_table or not, if not add to end
             head->page_table[i] = insert_index;
+
+            for(j = 0; head->page_table[j] != insert_index; j++);
+            head->frame_index = j; // relocate which frame of pcb we insert the page
+            head->active_pagetable[j] = head->page_table[j]; // reactivate the page
             fclose(file);
+
             head->is_lastframe = 0; // no matter what stragtegy used to handle page fault, reset back to normal
             j = 1; // j = 1 -> full frame, j = 0 -> not full
             for(i = 0; i < MAX_FRAMESIZE; i++){
@@ -271,6 +283,7 @@ void mem_run_lines(pcb_node *head, int num_lines){
             }
             if(j) frame_full = 1;
             else frame_full = 0;
+            
             break;
         }
 
@@ -306,20 +319,48 @@ void mem_run_lines(pcb_node *head, int num_lines){
         }
         else parseInput(line); // if it does not, then execute the line normally
         
-        // at last line of last frame && there might be more lines coming up, which can cause page fault
-        if(page_table[frame_index]== last_frame_index && new_line_index == 2){
-            // if(page_table[frame_index] == MAX_FRAMESIZE - 1) frame_full = 1;
-            // check if all pages loaded in memory are done
-            head->is_lastframe = 1;
-        }
+            
         memset(line,0,sizeof(line));
 
+
+        j = 1; // j = 1 -> full frame, j = 0 -> not full
+        for(i = 0; i < MAX_FRAMESIZE; i++){
+            if(frame_store[i] == NULL){
+                j = 0;
+                break;
+            }
+        }
+        if(j) frame_full = 1;
+        else frame_full = 0;
         head->line_index += 1;
         // move to next page in page table by increment the frame_index by 1
         if(new_line_index == 2) {
-            i = 0;
-            while(head->page_table[i] != head->page_table[frame_index]) i++;
-            head->frame_index = i+1;
+
+            // [-2,3,-1,-1,-1]
+            // [-2,-2,-1,-1,-1]
+            // [-2,-2,-1,-1,-1] [2 3]
+            // frame_index = 0
+            // head->page_table[0] = 3
+
+
+            head->active_pagetable[frame_index] = -2; // the worked frame set to inactivate
+            // while(head->page_table[i] != head->page_table[frame_index]) i++;
+            // if(i != MAX_FRAMESIZE-1 && (head->page_table[i+1] != -1)){
+            //     head->frame_index = i+1;
+            // }
+
+            i = 0; // i = 0 if there is no active page, i = 1 if there is one
+            j = 0;
+            while(j < 34){
+                if(head->active_pagetable[j] >= 0) {
+                    i = 1;
+                    break;
+                }
+                j++;
+            }
+            
+            if(i == 1) head->frame_index = j; // update if there is activate page
+    
         }
         if(end_flag){
             break;
@@ -331,27 +372,3 @@ void mem_run_lines(pcb_node *head, int num_lines){
     
 }
 
-// // clean up the current SCRIPT (one script at a time)
-// void mem_cleanup(pcb_node *head){
-//     int cur_index = head->spot_index;
-//     int start_index = cur_index;
-//     int total_lines = head->total_lines;
-
-//     for(cur_index; cur_index < start_index + total_lines; cur_index++){
-//         var_store[cur_index].var = "none";
-//         memset(var_store[cur_index].line,0,sizeof(var_store[cur_index].line));
-//     }
-
-//     return;
-// }
-
-// void mem_print_dirtymem(){
-//     int find_dirty = 0;
-//     for(int i = 100; i<1000; i++){
-//         if(strcmp(var_store[i].var, "none") != 0){
-//             printf("Memory space at: %d,Var: %s, Line: %s,is not cleaned!\n",i,var_store[i].var,var_store[i].line);
-//             find_dirty = 1;
-//         }       
-//     }
-//     if(!find_dirty) printf("All codes from scripts are cleaned.\n");
-// }

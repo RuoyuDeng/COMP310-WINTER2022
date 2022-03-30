@@ -64,3 +64,30 @@ echo P8L7
 6531420
 
 0653142
+
+0
+echo P8L1
+echo P8L2
+echo P8L3
+1
+echo P8L4
+echo P8L5
+echo P8L6
+2
+echo P8L1
+echo P8L2
+echo P8L3
+3
+echo P8L4
+echo P8L5
+echo P8L6
+
+0
+echo P10L1
+set a PTenLineTwoSet; print a
+echo P10L3
+1
+echo $a
+echo P10L5
+set a PTenLineSixSet; echo $a
+

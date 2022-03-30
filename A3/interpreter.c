@@ -70,16 +70,6 @@ int interpreter(char* command_args[], int args_size){
         return system("ls -1");
     } else if (strcmp(command_args[0], "exec")==0) {
         if (args_size >= 3 && args_size <= 5) {
-            // // check for identical files
-            // if(args_size > 3){
-            //     for(int i = 1; i<args_size-1; i++){
-            //         for(int j = i+1; j<args_size-1; j++){
-            //             if(strcmp(command_args[i],command_args[j]) == 0){
-            //                 return badcommandSameFile();
-            //             }       
-            //         }
-            //     }
-            // }
             return exec(command_args,args_size); // no need to check for identical files now
         }
         return badcommand();
@@ -100,7 +90,7 @@ set VAR STRING		Assigns a value to shell memory\n \
 print VAR		Displays the STRING assigned to VAR\n \
 run SCRIPT.TXT		Executes the file SCRIPT.TXT\n \
 exec prog1 prog2 prog3 POLICY     Executes up to 3 concurrent programs, according to a given scheduling policy\n \
-resetmem              Deletes the content of the variable store.";
+resetmem                          Deletes the content of the variable store.";
     printf("%s\n", help_string);
     return 0;
 }
@@ -197,19 +187,11 @@ int run(char* filename){
         mem_run_lines(ready_head,3);
     }
     
-
-    // clean up
-    // 1. remove all lines of code from shell memory space
-    // mem_cleanup(ready_head);
     free(ready_head);
     free(ptr_head);
-    
-    // print to check if there is any dirty memory
-    //mem_print_dirtymem();
 
     // clean up frame
     clean_frame();
-    var_store_init();
     return errCode;
 }
 
@@ -221,19 +203,7 @@ int exec(char* filenames[], int args_size){
     if(strcmp(filenames[args_size-1],"RR") == 0){
         
         return rrpoly(filenames,args_size-2);
-    }
-    // else if(strcmp(filenames[args_size-1],"FCFS") == 0){
-    //     return fcfspoly(filenames,args_size-2);
-    // }
-    // else if (strcmp(filenames[args_size-1],"SJF") == 0){
-    //     return sjfpoly(filenames,args_size-2);
-    // }
-    // else if(strcmp(filenames[args_size-1],"AGING") == 0){
-    //     return agingpoly(filenames,args_size-2);
-    // }
-
-    // clean up frame
-    
+    }    
     return badcommand();
 }
 
